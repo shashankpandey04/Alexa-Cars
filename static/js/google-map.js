@@ -1,4 +1,3 @@
-
 var google;
 
 function init() {
@@ -59,4 +58,5 @@ function init() {
     }
     
 }
-google.maps.event.addDomListener(window, 'load', init);
+// Replace deprecated google.maps.event.addDomListener with standard addEventListener
+window.addEventListener('load', init);
