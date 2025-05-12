@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>AlexaCars - Manage Bookings</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/open-iconic-bootstrap.min.css">
+  <link rel="stylesheet" href="css/animate.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 250px;
+      background-color: #343a40;
+      padding-top: 20px;
+      color: white;
+      z-index: 1;
+    }
+    .sidebar-brand {
+      padding: 15px 25px;
+      margin-bottom: 20px;
+    }
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar-menu li {
+      margin-bottom: 5px;
+    }
+    .sidebar-menu a {
+      display: block;
+      padding: 12px 25px;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    .sidebar-menu a:hover, .sidebar-menu a.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-left: 4px solid #01d28e;
+    }
+    .sidebar-menu i {
+      margin-right: 10px;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+    .section-title {
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .logout-btn {
+      position: absolute;
+      bottom: 20px;
+      width: 80%;
+      left: 10%;
+      padding: 10px;
+      background-color: rgba(220, 53, 69, 0.8);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .logout-btn:hover {
+      background-color: rgba(220, 53, 69, 1);
+    }
+    .action-btns .btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+    .filter-section {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .booking-details {
+      background-color: #f8f9fa;
+      border-left: 4px solid #01d28e;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .booking-details h6 {
+      margin-bottom: 10px;
+      color: #343a40;
+    }
+    .booking-details p {
+      margin-bottom: 5px;
+      color: #6c757d;
+    }
+    .modal-header {
+      background-color: #01d28e;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a class="navbar-brand" href="index.html" style="font-size: 24px; color: white;">Alexa<span style="color: #01d28e;">Cars</span></a>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="admin-dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+      <li><a href="admin-cars.html"><i class="fas fa-car"></i> Manage Cars</a></li>
+      <li><a href="admin-bookings.html" class="active"><i class="fas fa-calendar-check"></i> Bookings</a></li>
+      <li><a href="admin-inquiries.html"><i class="fas fa-envelope"></i> Inquiries</a></li>
+      <li><a href="admin-users.html"><i class="fas fa-users"></i> Users</a></li>
+      <li><a href="admin-settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+    </ul>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container-fluid">
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <h2>Manage Bookings</h2>
+          <p class="text-muted">View and manage all car bookings</p>
+        </div>
+        <div class="col-md-4 text-right">
+          <button class="btn btn-primary" data-toggle="modal" data-target="#addBookingModal">
+            <i class="fas fa-plus"></i> Add New Booking
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card filter-section">
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="statusFilter">Status</label>
+                  <select class="form-control" id="statusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="dateFilter">Date Range</label>
+                  <input type="text" class="form-control" id="dateFilter" placeholder="Select date range">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="carFilter">Car</label>
+                  <select class="form-control" id="carFilter">
+                    <option value="">All Cars</option>
+                    <option value="Hyundai Creta">Hyundai Creta</option>
+                    <option value="Maruti Swift">Maruti Swift</option>
+                    <option value="Hyundai i10 Nios">Hyundai i10 Nios</option>
+                    <option value="Toyota Glanza">Toyota Glanza</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <button class="btn btn-primary btn-block" onclick="applyFilters()">Apply Filters</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bookings List -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Booking ID</th>
+                      <th>Customer</th>
+                      <th>Car</th>
+                      <th>From</th>
+                      <th>To</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>#BK1001</td>
+                      <td>Rahul Sharma</td>
+                      <td>Hyundai Creta</td>
+                      <td>03 May, 2025</td>
+                      <td>05 May, 2025</td>
+                      <td>₹8,400</td>
+                      <td><span class="badge badge-success">Active</span></td>
+                      <td class="action-btns">
+                        <button class="btn btn-info" onclick="viewBooking(1001)"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-warning" onclick="editBooking(1001)"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger" onclick="cancelBooking(1001)"><i class="fas fa-times"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>#BK1002</td>
+                      <td>Priya Patel</td>
+                      <td>Maruti Swift</td>
+                      <td>04 May, 2025</td>
+                      <td>07 May, 2025</td>
+                      <td>₹7,500</td>
+                      <td><span class="badge badge-warning">Pending</span></td>
+                      <td class="action-btns">
+                        <button class="btn btn-info" onclick="viewBooking(1002)"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-warning" onclick="editBooking(1002)"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger" onclick="cancelBooking(1002)"><i class="fas fa-times"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>#BK1003</td>
+                      <td>Amit Singh</td>
+                      <td>Toyota Glanza</td>
+                      <td>02 May, 2025</td>
+                      <td>04 May, 2025</td>
+                      <td>₹5,000</td>
+                      <td><span class="badge badge-success">Active</span></td>
+                      <td class="action-btns">
+                        <button class="btn btn-info" onclick="viewBooking(1003)"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-warning" onclick="editBooking(1003)"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger" onclick="cancelBooking(1003)"><i class="fas fa-times"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>#BK1004</td>
+                      <td>Neha Gupta</td>
+                      <td>Hyundai i10 Nios</td>
+                      <td>01 May, 2025</td>
+                      <td>03 May, 2025</td>
+                      <td>₹4,400</td>
+                      <td><span class="badge badge-danger">Completed</span></td>
+                      <td class="action-btns">
+                        <button class="btn btn-info" onclick="viewBooking(1004)"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-warning" onclick="editBooking(1004)"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-secondary" disabled><i class="fas fa-times"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>#BK1005</td>
+                      <td>Vikram Malhotra</td>
+                      <td>Mahindra Thar</td>
+                      <td>30 Apr, 2025</td>
+                      <td>02 May, 2025</td>
+                      <td>₹9,000</td>
+                      <td><span class="badge badge-secondary">Cancelled</span></td>
+                      <td class="action-btns">
+                        <button class="btn btn-info" onclick="viewBooking(1005)"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-secondary" disabled><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-secondary" disabled><i class="fas fa-times"></i></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mt-4">
+                  <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                  </li>
+                  <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                  <li class="page-item"><a class="page-link" href="#">2</a></li>
+                  <li class="page-item"><a class="page-link" href="#">3</a></li>
+                  <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Booking Modal -->
+  <div class="modal fade" id="viewBookingModal" tabindex="-1" role="dialog" aria-labelledby="viewBookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewBookingModalLabel">Booking Details</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="booking-details">
+                <h6>Booking Information</h6>
+                <p><strong>Booking ID:</strong> <span id="bookingId">#BK1001</span></p>
+                <p><strong>Status:</strong> <span id="bookingStatus" class="badge badge-success">Active</span></p>
+                <p><strong>Created On:</strong> <span id="bookingDate">02 May, 2025</span></p>
+                <p><strong>Payment Method:</strong> <span id="paymentMethod">Credit Card</span></p>
+                <p><strong>Total Amount:</strong> <span id="totalAmount">₹8,400</span></p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="booking-details">
+                <h6>Customer Information</h6>
+                <p><strong>Name:</strong> <span id="customerName">Rahul Sharma</span></p>
+                <p><strong>Phone:</strong> <span id="customerPhone">+91 9876543210</span></p>
+                <p><strong>Email:</strong> <span id="customerEmail">rahul.sharma@example.com</span></p>
+                <p><strong>Address:</strong> <span id="customerAddress">123 Main Street, Jaipur</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="booking-details">
+                <h6>Car Information</h6>
+                <p><strong>Car:</strong> <span id="carName">Hyundai Creta</span></p>
+                <p><strong>Category:</strong> <span id="carCategory">SUV</span></p>
+                <p><strong>Rate:</strong> <span id="carRate">₹4,200/day</span></p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="booking-details">
+                <h6>Rental Information</h6>
+                <p><strong>Pickup Date:</strong> <span id="pickupDate">03 May, 2025</span></p>
+                <p><strong>Return Date:</strong> <span id="returnDate">05 May, 2025</span></p>
+                <p><strong>Pickup Location:</strong> <span id="pickupLocation">Jaipur Airport</span></p>
+                <p><strong>Return Location:</strong> <span id="returnLocation">Jaipur Airport</span></p>
+                <p><strong>Duration:</strong> <span id="duration">2 days</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="booking-details">
+            <h6>Additional Notes</h6>
+            <p id="additionalNotes">Customer requested airport pickup and drop-off. Preferred white color car with sunroof.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-warning" onclick="editBooking(1001)">Edit Booking</button>
+          <button type="button" class="btn btn-success" onclick="completeBooking(1001)">Mark as Completed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Booking Modal -->
+  <div class="modal fade" id="addBookingModal" tabindex="-1" role="dialog" aria-labelledby="addBookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addBookingModalLabel">Add New Booking</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="bookingForm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="customerName">Customer Name</label>
+                  <input type="text" class="form-control" id="inputCustomerName" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="customerPhone">Phone Number</label>
+                  <input type="tel" class="form-control" id="inputCustomerPhone" required>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="customerEmail">Email</label>
+                  <input type="email" class="form-control" id="inputCustomerEmail">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="carSelect">Select Car</label>
+                  <select class="form-control" id="carSelect" required>
+                    <option value="">Select a Car</option>
+                    <option value="Hyundai Creta">Hyundai Creta - ₹4,200/day</option>
+                    <option value="Maruti Swift">Maruti Swift - ₹2,500/day</option>
+                    <option value="Hyundai i10 Nios">Hyundai i10 Nios - ₹2,200/day</option>
+                    <option value="Toyota Glanza">Toyota Glanza - ₹2,500/day</option>
+                    <option value="Mahindra Thar">Mahindra Thar - ₹4,500/day</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="pickupDate">Pickup Date</label>
+                  <input type="date" class="form-control" id="inputPickupDate" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="returnDate">Return Date</label>
+                  <input type="date" class="form-control" id="inputReturnDate" required>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="pickupLocation">Pickup Location</label>
+                  <input type="text" class="form-control" id="inputPickupLocation" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="returnLocation">Return Location</label>
+                  <input type="text" class="form-control" id="inputReturnLocation" required>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="bookingStatus">Booking Status</label>
+                  <select class="form-control" id="inputBookingStatus" required>
+                    <option value="Pending">Pending</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="paymentMethod">Payment Method</label>
+                  <select class="form-control" id="inputPaymentMethod">
+                    <option value="Cash">Cash</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Debit Card">Debit Card</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="additionalNotes">Additional Notes</label>
+              <textarea class="form-control" id="inputAdditionalNotes" rows="3"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="saveBooking()">Save Booking</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script>
+    function logout() {
+      window.location.href = 'admin-login.html';
+    }
+
+    function viewBooking(id) {
+      // In a real application, this would fetch booking details from a database
+      $('#viewBookingModal').modal('show');
+    }
+
+    function editBooking(id) {
+      // In a real application, this would fetch booking details and populate the form
+      $('#addBookingModalLabel').text('Edit Booking #' + id);
+      $('#addBookingModal').modal('show');
+    }
+
+    function cancelBooking(id) {
+      if (confirm('Are you sure you want to cancel this booking?')) {
+        // In a real application, this would update the booking status in a database
+        alert('Booking #' + id + ' has been cancelled');
+        // Then refresh the table
+      }
+    }
+
+    function completeBooking(id) {
+      if (confirm('Are you sure you want to mark this booking as completed?')) {
+        // In a real application, this would update the booking status in a database
+        alert('Booking #' + id + ' has been marked as completed');
+        $('#viewBookingModal').modal('hide');
+        // Then refresh the table
+      }
+    }
+
+    function saveBooking() {
+      // In a real application, this would save the booking to a database
+      alert('Booking saved successfully!');
+      $('#addBookingModal').modal('hide');
+      // Then refresh the table
+    }
+
+    function applyFilters() {
+      // In a real application, this would filter the bookings based on selected criteria
+      alert('Filters applied');
+      // Then refresh the table with filtered data
+    }
+  </script>
+</body>
+</html>

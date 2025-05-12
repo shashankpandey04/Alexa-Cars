@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>AlexaCars - Admin Dashboard</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/open-iconic-bootstrap.min.css">
+  <link rel="stylesheet" href="css/animate.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 250px;
+      background-color: #343a40;
+      padding-top: 20px;
+      color: white;
+      z-index: 1;
+    }
+    .sidebar-brand {
+      padding: 15px 25px;
+      margin-bottom: 20px;
+    }
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar-menu li {
+      margin-bottom: 5px;
+    }
+    .sidebar-menu a {
+      display: block;
+      padding: 12px 25px;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    .sidebar-menu a:hover, .sidebar-menu a.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-left: 4px solid #01d28e;
+    }
+    .sidebar-menu i {
+      margin-right: 10px;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .stat-card {
+      padding: 20px;
+      border-radius: 10px;
+      color: white;
+    }
+    .bg-primary-gradient {
+      background: linear-gradient(45deg, #01d28e, #00b377);
+    }
+    .bg-info-gradient {
+      background: linear-gradient(45deg, #17a2b8, #138496);
+    }
+    .bg-warning-gradient {
+      background: linear-gradient(45deg, #ffc107, #e0a800);
+    }
+    .bg-danger-gradient {
+      background: linear-gradient(45deg, #dc3545, #c82333);
+    }
+    .stat-icon {
+      font-size: 40px;
+      opacity: 0.7;
+    }
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .logout-btn {
+      position: absolute;
+      bottom: 20px;
+      width: 80%;
+      left: 10%;
+      padding: 10px;
+      background-color: rgba(220, 53, 69, 0.8);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .logout-btn:hover {
+      background-color: rgba(220, 53, 69, 1);
+    }
+    .section-title {
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #dee2e6;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a class="navbar-brand" href="index.html" style="font-size: 24px; color: white;">Alexa<span style="color: #01d28e;">Cars</span></a>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+      <li><a href="admin-cars.html"><i class="fas fa-car"></i> Manage Cars</a></li>
+      <li><a href="admin-bookings.html"><i class="fas fa-calendar-check"></i> Bookings</a></li>
+      <li><a href="admin-inquiries.html"><i class="fas fa-envelope"></i> Inquiries</a></li>
+      <li><a href="admin-users.html"><i class="fas fa-users"></i> Users</a></li>
+      <li><a href="admin-settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+    </ul>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container-fluid">
+      <div class="row mb-4">
+        <div class="col-md-12">
+          <h2>Dashboard</h2>
+          <p class="text-muted">Welcome to AlexaCars Admin Panel</p>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="row">
+        <div class="col-md-3">
+          <div class="card stat-card bg-primary-gradient">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h3 class="mb-0">15</h3>
+                <p class="mb-0">Total Cars</p>
+              </div>
+              <div class="stat-icon">
+                <i class="fas fa-car"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card stat-card bg-info-gradient">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h3 class="mb-0">24</h3>
+                <p class="mb-0">Active Bookings</p>
+              </div>
+              <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card stat-card bg-warning-gradient">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h3 class="mb-0">8</h3>
+                <p class="mb-0">New Inquiries</p>
+              </div>
+              <div class="stat-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card stat-card bg-danger-gradient">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h3 class="mb-0">₹45,600</h3>
+                <p class="mb-0">Today's Revenue</p>
+              </div>
+              <div class="stat-icon">
+                <i class="fas fa-rupee-sign"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Bookings -->
+      <div class="row mt-4">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="section-title">Recent Bookings</h5>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Booking ID</th>
+                      <th>Customer</th>
+                      <th>Car</th>
+                      <th>From</th>
+                      <th>To</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>#BK1001</td>
+                      <td>Rahul Sharma</td>
+                      <td>Hyundai Creta</td>
+                      <td>03 May, 2025</td>
+                      <td>05 May, 2025</td>
+                      <td><span class="badge badge-success">Active</span></td>
+                      <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
+                    </tr>
+                    <tr>
+                      <td>#BK1002</td>
+                      <td>Priya Patel</td>
+                      <td>Maruti Swift</td>
+                      <td>04 May, 2025</td>
+                      <td>07 May, 2025</td>
+                      <td><span class="badge badge-warning">Pending</span></td>
+                      <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
+                    </tr>
+                    <tr>
+                      <td>#BK1003</td>
+                      <td>Amit Singh</td>
+                      <td>Toyota Glanza</td>
+                      <td>02 May, 2025</td>
+                      <td>04 May, 2025</td>
+                      <td><span class="badge badge-success">Active</span></td>
+                      <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
+                    </tr>
+                    <tr>
+                      <td>#BK1004</td>
+                      <td>Neha Gupta</td>
+                      <td>Hyundai i10 Nios</td>
+                      <td>01 May, 2025</td>
+                      <td>03 May, 2025</td>
+                      <td><span class="badge badge-danger">Completed</span></td>
+                      <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="text-center mt-3">
+                <a href="admin-bookings.html" class="btn btn-outline-primary">View All Bookings</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Inquiries -->
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="section-title">Recent Inquiries</h5>
+              <div class="inquiry-list">
+                <div class="media border-bottom pb-3 mb-3">
+                  <div class="media-body">
+                    <h6 class="mt-0">Vikram Malhotra</h6>
+                    <p class="text-muted mb-1">Inquiry about Mahindra Thar availability</p>
+                    <small class="text-muted">Today, 10:45 AM</small>
+                  </div>
+                  <a href="#" class="btn btn-sm btn-outline-primary">Reply</a>
+                </div>
+                <div class="media border-bottom pb-3 mb-3">
+                  <div class="media-body">
+                    <h6 class="mt-0">Anjali Desai</h6>
+                    <p class="text-muted mb-1">Long-term rental inquiry</p>
+                    <small class="text-muted">Yesterday, 3:20 PM</small>
+                  </div>
+                  <a href="#" class="btn btn-sm btn-outline-primary">Reply</a>
+                </div>
+                <div class="media">
+                  <div class="media-body">
+                    <h6 class="mt-0">Rajesh Kumar</h6>
+                    <p class="text-muted mb-1">Discount for corporate booking</p>
+                    <small class="text-muted">May 2, 2025</small>
+                  </div>
+                  <a href="#" class="btn btn-sm btn-outline-primary">Reply</a>
+                </div>
+              </div>
+              <div class="text-center mt-3">
+                <a href="admin-inquiries.html" class="btn btn-outline-primary">View All Inquiries</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script>
+    function logout() {
+      // In a real application, this would include clearing session data
+      window.location.href = 'admin-login.html';
+    }
+  </script>
+</body>
+</html>
