@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-
 {% block content %}
-    
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/car-showcase.css') }}">
     <div class="hero-wrap ftco-degree-bg" style="background-image: url(https://cdn.pixabay.com/video/2023/04/15/159014-818026276_tiny.jpg);" 
     data-stellar-background-ratio="0.5">
       <div class="overlay"></div>
@@ -112,84 +111,62 @@
 
 
     <section class="ftco-section ftco-no-pt bg-light">
-    	<div class="container">
-    		<div class="row justify-content-center">
+      <div class="container">
+        <div class="row justify-content-center">
           <div class="col-md-12 heading-section text-center ftco-animate mb-5">
-          	<span class="subheading">What we offer</span>
-            <h2 class="mb-2">Budget Friendly Self Drive Cars in Jaipur</h2>
+            <span class="subheading">What we offer</span>
+            <h2 class="mb-2">Experience the Future of Car Rental</h2>
           </div>
         </div>
-    		<div class="row">
-    			<div class="col-md-12">
-    				<div class="carousel-car owl-carousel">
-    					<div class="item">
-    						<div class="car-wrap rounded ftco-animate">
-		    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Hyundai-Creta-sunroof-500x270-c-1.png);">
-		    					</div>
-		    					<div class="text">
-		    						<h2 class="mb-0"><a href="#">Hyundai Creta</a></h2>
-		    						<div class="d-flex mb-3">
-			    						<span class="cat"> 2024 Model with sunroof</span>
-			    						<p class="price ml-auto">₹4200<span>/day</span></p>
-		    						</div>
-		    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-		    					</div>
-		    				</div>
-    					</div>
-    					<div class="item">
-    						<div class="car-wrap rounded ftco-animate">
-		    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/grand-i10-500x270-c-1.webp);">
-		    					</div>
-		    					<div class="text">
-		    						<h2 class="mb-0"><a href="#">Hyundai i10 Nios CNG</a></h2>
-		    						<div class="d-flex mb-3">
-			    						<span class="cat">Hyundai</span>
-			    						<p class="price ml-auto">₹2200 <span>/day</span></p>
-		    						</div>
-		    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-		    					</div>
-		    				</div>
-    					</div>
-    					<div class="item">
-    						<div class="car-wrap rounded ftco-animate">
-		    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Maruti-Suzuki-Swift-White-500x270-c-1.jpg);">
-		    					</div>
-		    					<div class="text">
-		    						<h2 class="mb-0"><a href="#">Maruti Suzuki Swift</a></h2>
-		    						<div class="d-flex mb-3">
-			    						<span class="cat">Maruti</span>
-			    						<p class="price ml-auto">₹2500 <span>/day</span></p>
-		    						</div>
-		    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-		    					</div>
-		    				</div>
-    					</div>
-    					<div class="item">
-    						<div class="car-wrap rounded ftco-animate">
-		    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/toyotaglanza.png);">
-		    					</div>
-		    					<div class="text">
-		    						<h2 class="mb-0"><a href="#">Toyota Glanza</a></h2>
-		    						<div class="d-flex mb-3">
-			    						<span class="cat">Toyota</span>
-			    						<p class="price ml-auto">₹2500 <span>/day</span></p>
-		    						</div>
-		    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-		    					</div>
-		    				</div>
-    					</div>
-    				</div>
-    			</div>
-    		</div>
-    	</div>
+        
+        <!-- 2025 Redesigned Car Showcase -->
+        <div class="car-showcase">
+          <!-- Car Gallery - Horizontal Scroll -->
+          <div class="car-gallery">
+            {% if cars|length > 0 %}
+              {% for car in cars %}
+              <div class="car-card" data-category="{{ car.category }}">
+                <div class="car-card-inner">
+                  <div class="car-image">
+                    <img src="{{ car.image if car.image else '/static/images/default_car.jpg' }}" alt="{{ car.name }}">
+                    {% if car.booked %}
+                    <div class="car-tag">Reserved</div>
+                    {% endif %}
+                  </div>
+                  <div class="car-details">
+                    <h3 class="car-name">{{ car.name }}</h3>
+                    <div class="car-meta">
+                      <span class="car-category"><i class="fa fa-tag"></i> {{ car.category }}</span>
+                      <span class="car-year"><i class="fa fa-calendar"></i> {{ car.year }}</span>
+                      <span class="car-fuel"><i class="fa fa-gas-pump"></i> {{ car.fuel_type }}</span>
+                    </div>
+                    <div class="car-price">
+                      <span class="amount">₹{{ car.price_per_day }}</span>
+                      <span class="period">/day</span>
+                    </div>
+                    <div class="car-actions">
+                      <a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn-book">Book Now</a>
+                      <a href="tel:9660597171" class="btn-call"><i class="fa fa-phone"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+			  {% endfor %}
+            {% else %}
+              <div class="no-cars">
+                <div class="icon"><i class="fa fa-car"></i></div>
+                <h3>Our fleet is being updated</h3>
+                <p>We're adding new vehicles to our inventory. Please check back soon or contact us for more information.</p>
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- View All Cars Button -->
+          <div class="view-all-wrapper">
+            <a href="/cars" class="view-all">Explore All Vehicles</a>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="ftco-section ftco-about">
@@ -214,11 +191,11 @@
 		<section class="ftco-section">
 			<div class="container">
 				<div class="row justify-content-center mb-5">
-          <div class="col-md-7 text-center heading-section ftco-animate">
-          	<span class="subheading">Services</span>
-            <h2 class="mb-3">Our Latest Services</h2>
-          </div>
-        </div>
+					<div class="col-md-7 text-center heading-section ftco-animate">
+						<span class="subheading">Services</span>
+						<h2 class="mb-3">Our Latest Services</h2>
+					</div>
+					</div>
 				<div class="row">
 					<div class="col-md-3">
 						<div class="services services-2 w-100 text-center">
@@ -382,4 +359,4 @@
     	</div>
     </section>	
 
-  {% endblock %}
+	{% endblock %}

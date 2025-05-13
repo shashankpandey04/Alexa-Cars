@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>AlexaCars - View Car Details</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_cars.css') }}">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="brand">
+        <span class="brand-logo">Alexa<span class="brand-name">Cars</span></span>
+      </a>
+    </div>
+    
+    <div class="user-profile">
+      <div class="user-avatar">
+        {{ user.first_name[0] }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ user.first_name }}</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+    
+    <ul class="sidebar-menu">
+        <li class="sidebar-item">
+            <a href="/" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+            Home
+            </a>
+        </li>
+      <li class="sidebar-item">
+        <a href="/dashboard" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-tachometer-alt"></i></span>
+          Dashboard
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/cars" class="sidebar-link active">
+          <span class="sidebar-icon"><i class="fas fa-car"></i></span>
+          Manage Cars
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/bookings" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-calendar-check"></i></span>
+          Bookings
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/inquiries" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-comment-dots"></i></span>
+          Inquiries
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/users" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+          Users
+        </a>
+      </li>
+    </ul>
+    
+    <div class="sidebar-footer">
+      <a href="/logout" class="logout-btn">
+        <span class="logout-icon"><i class="fas fa-sign-out-alt"></i></span>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">{{ car.name }}</h1>
+        <p class="page-subtitle">Vehicle Details</p>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/cars" class="btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Cars
+        </a>
+        <a href="/admin/cars/edit/{{ car._id }}" class="btn-primary">
+          <i class="fas fa-edit"></i> Edit Car
+        </a>
+      </div>
+    </header>
+
+    <!-- Car Details -->
+    <div class="car-details-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+              {{ message }}
+              <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="car-view-layout">
+        <!-- Car Image Section -->
+        <div class="car-image-section">
+          <div class="car-main-image">
+            {% if car.image %}
+              <img src="{{ car.image }}" alt="{{ car.name }}">
+            {% else %}
+              <div class="no-image">
+                <i class="fas fa-car-side"></i>
+                <p>No image available</p>
+              </div>
+            {% endif %}
+            <div class="car-status-badge status-{{ car.status|lower }}">
+              {{ car.status }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Car Info Section -->
+        <div class="car-info-section">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Vehicle Information</h2>
+            </div>
+            <div class="card-body">
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Name</div>
+                  <div class="info-value">{{ car.name }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Category</div>
+                  <div class="info-value">{{ car.category }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Year</div>
+                  <div class="info-value">{{ car.year }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Fuel Type</div>
+                  <div class="info-value">{{ car.fuel_type }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Price Per Day</div>
+                  <div class="info-value price">₹{{ car.price_per_day }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Status</div>
+                  <div class="info-value status-text-{{ car.status|lower }}">{{ car.status }}</div>
+                </div>
+                {% if car.created_at %}
+                <div class="info-item">
+                  <div class="info-label">Added On</div>
+                  <div class="info-value">{{ car.created_at.strftime('%d %b %Y') }}</div>
+                </div>
+                {% endif %}
+                {% if car.updated_at %}
+                <div class="info-item">
+                  <div class="info-label">Last Updated</div>
+                  <div class="info-value">{{ car.updated_at.strftime('%d %b %Y') }}</div>
+                </div>
+                {% endif %}
+              </div>
+
+              {% if car.description %}
+              <div class="description-section">
+                <h3 class="section-title">Description</h3>
+                <p class="car-description">{{ car.description }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <a href="/admin/cars/edit/{{ car._id }}" class="btn-primary">
+              <i class="fas fa-edit"></i> Edit Vehicle
+            </a>
+            <button class="btn-danger" data-toggle="modal" data-target="#deleteModal">
+              <i class="fas fa-trash-alt"></i> Delete Vehicle
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Delete Confirmation</h3>
+          <button type="button" class="close-modal" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong>{{ car.name }}</strong>?</p>
+          <p class="text-danger">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-dismiss="modal">Cancel</button>
+          <form action="/admin/cars/delete" method="POST" style="display: inline;">
+            <input type="hidden" name="car_id" value="{{ car._id }}">
+            <button type="submit" class="btn-danger">Delete Vehicle</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Alert close functionality
+    const closeButtons = document.querySelectorAll('.close-alert');
+    closeButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        this.parentElement.style.display = 'none';
+      });
+    });
+    
+    // Delete modal functionality
+    const deleteModal = document.getElementById('deleteModal');
+    const openModalBtn = document.querySelector('[data-target="#deleteModal"]');
+    const closeModalBtns = document.querySelectorAll('[data-dismiss="modal"]');
+    
+    openModalBtn.addEventListener('click', function() {
+      deleteModal.style.display = 'block';
+    });
+    
+    closeModalBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        deleteModal.style.display = 'none';
+      });
+    });
+    
+    window.addEventListener('click', function(event) {
+      if (event.target === deleteModal) {
+        deleteModal.style.display = 'none';
+      }
+    });
+  </script>
+
+  <style>
+    .car-view-layout {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2rem;
+    }
+    
+    @media (max-width: 992px) {
+      .car-view-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .car-image-section {
+      position: relative;
+    }
+    
+    .car-main-image {
+      position: relative;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      height: 100%;
+      min-height: 300px;
+      background-color: var(--gray-100);
+    }
+    
+    .car-main-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .no-image {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--gray-500);
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    .no-image i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .car-status-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 1;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .status-available {
+      background: rgba(67, 170, 139, 0.9);
+      color: white;
+    }
+    
+    .status-booked {
+      background: rgba(247, 37, 133, 0.9);
+      color: white;
+    }
+    
+    .status-maintenance {
+      background: rgba(230, 57, 70, 0.9);
+      color: white;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .info-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .info-label {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    
+    .info-value.price {
+      color: var(--primary-color);
+    }
+    
+    .status-text-available {
+      color: #43aa8b;
+    }
+    
+    .status-text-booked {
+      color: var(--warning-color);
+    }
+    
+    .status-text-maintenance {
+      color: var(--danger-color);
+    }
+    
+    .description-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--gray-200);
+    }
+    
+    .description-section h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 1rem;
+    }
+    
+    .car-description {
+      color: var(--gray-700);
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-danger:hover {
+      background-color: #d32f2f;
+      box-shadow: 0 4px 8px rgba(230, 57, 70, 0.2);
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .car-details-container {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</body>
+</html>

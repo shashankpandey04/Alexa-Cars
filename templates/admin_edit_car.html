@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>AlexaCars - Edit Car</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_cars.css') }}">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="brand">
+        <span class="brand-logo">Alexa<span class="brand-name">Cars</span></span>
+      </a>
+    </div>
+    
+    <div class="user-profile">
+      <div class="user-avatar">
+        {{ user.first_name[0] }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ user.first_name }}</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+    
+    <ul class="sidebar-menu">
+        <li class="sidebar-item">
+            <a href="/" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+            Home
+            </a>
+        </li>
+      <li class="sidebar-item">
+        <a href="/dashboard" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-tachometer-alt"></i></span>
+          Dashboard
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/cars" class="sidebar-link active">
+          <span class="sidebar-icon"><i class="fas fa-car"></i></span>
+          Manage Cars
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/bookings" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-calendar-check"></i></span>
+          Bookings
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/inquiries" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-comment-dots"></i></span>
+          Inquiries
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/users" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+          Users
+        </a>
+      </li>
+    </ul>
+    
+    <div class="sidebar-footer">
+      <a href="/logout" class="logout-btn">
+        <span class="logout-icon"><i class="fas fa-sign-out-alt"></i></span>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">Edit Vehicle</h1>
+        <p class="page-subtitle">Update {{ car.name }} details</p>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/cars" class="btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Cars
+        </a>
+      </div>
+    </header>
+
+    <div class="edit-car-container">
+      <!-- Success and Error Alerts -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+              {{ message }}
+              <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Edit Car Form -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Vehicle Information</h2>
+        </div>
+        <div class="card-body">
+          <form action="/admin/cars/edit/{{ car._id }}" method="POST" enctype="multipart/form-data" class="car-form">
+            <div class="form-grid">
+              <!-- Basic Information Section -->
+              <div class="form-section">
+                <h3 class="section-title">Basic Information</h3>
+                
+                <div class="form-group">
+                  <label for="name">Vehicle Name*</label>
+                  <input type="text" id="name" name="name" class="form-control" value="{{ car.name }}" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="category">Category*</label>
+                  <select id="category" name="category" class="form-control" required>
+                    <option value="Sedan" {% if car.category == 'Sedan' %}selected{% endif %}>Sedan</option>
+                    <option value="Hatchback" {% if car.category == 'Hatchback' %}selected{% endif %}>Hatchback</option>
+                    <option value="SUV" {% if car.category == 'SUV' %}selected{% endif %}>SUV</option>
+                    <option value="Luxury" {% if car.category == 'Luxury' %}selected{% endif %}>Luxury</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="price">Price Per Day (₹)*</label>
+                  <input type="number" id="price" name="price" class="form-control" value="{{ car.price_per_day }}" required min="0">
+                </div>
+                
+                <div class="form-group">
+                  <label for="status">Status*</label>
+                  <select id="status" name="status" class="form-control" required>
+                    <option value="Available" {% if car.status == 'Available' %}selected{% endif %}>Available</option>
+                    <option value="Booked" {% if car.status == 'Booked' %}selected{% endif %}>Booked</option>
+                    <option value="Maintenance" {% if car.status == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                  </select>
+                </div>
+              </div>
+              
+              <!-- Details Section -->
+              <div class="form-section">
+                <h3 class="section-title">Vehicle Details</h3>
+                
+                <div class="form-group">
+                  <label for="year">Year*</label>
+                  <input type="number" id="year" name="year" class="form-control" value="{{ car.year }}" required min="2000" max="2025">
+                </div>
+                
+                <div class="form-group">
+                  <label for="fuel_type">Fuel Type*</label>
+                  <select id="fuel_type" name="fuel_type" class="form-control" required>
+                    <option value="Petrol" {% if car.fuel_type == 'Petrol' %}selected{% endif %}>Petrol</option>
+                    <option value="Diesel" {% if car.fuel_type == 'Diesel' %}selected{% endif %}>Diesel</option>
+                    <option value="CNG" {% if car.fuel_type == 'CNG' %}selected{% endif %}>CNG</option>
+                    <option value="Electric" {% if car.fuel_type == 'Electric' %}selected{% endif %}>Electric</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="description">Description</label>
+                  <textarea id="description" name="description" class="form-control" rows="4">{{ car.description }}</textarea>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Image Upload Section -->
+            <div class="form-section mt-4">
+              <h3 class="section-title">Vehicle Image</h3>
+              
+              <div class="image-upload-container">
+                <div class="image-preview" id="imagePreview">
+                  {% if car.image %}
+                    <img src="{{ car.image }}" alt="{{ car.name }}">
+                  {% else %}
+                    <i class="fas fa-car-side"></i>
+                    <p>No image available</p>
+                  {% endif %}
+                </div>
+                
+                <div class="image-upload-controls">
+                  <label for="car_image" class="custom-file-upload">
+                    <i class="fas fa-cloud-upload-alt"></i> Change Image
+                  </label>
+                  <input type="file" id="car_image" name="car_image" accept="image/*" class="file-input">
+                  <p class="file-help">Upload a clear image of the vehicle. Leave empty to keep the current image.</p>
+                  <p class="current-image-info">Current image: {{ car.image.split('/')[-1] }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <a href="/admin/cars" class="btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+              <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i> Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Image preview functionality
+    const carImage = document.getElementById('car_image');
+    const imagePreview = document.getElementById('imagePreview');
+    
+    carImage.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          imagePreview.innerHTML = `<img src="${e.target.result}" alt="Vehicle Preview">`;
+        }
+        
+        reader.readAsDataURL(this.files[0]);
+      } 
+    });
+    
+    // Alert close functionality
+    const closeButtons = document.querySelectorAll('.close-alert');
+    closeButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        this.parentElement.style.display = 'none';
+      });
+    });
+  </script>
+
+  <!-- Additional styling for edit page -->
+  <style>
+    .current-image-info {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      font-style: italic;
+    }
+    
+    .edit-car-container {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</body>
+</html>

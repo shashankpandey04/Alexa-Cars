@@ -1,0 +1,590 @@
+/* 2025 Futuristic Car Showcase Styles */
+
+.car-showcase {
+  --primary-gradient: linear-gradient(135deg, #4361ee, #4cc9f0);
+  --hover-gradient: linear-gradient(135deg, #3a56d4, #38b6da);
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --shadow-color: rgba(0, 35, 80, 0.1);
+  position: relative;
+  padding: 40px 0;
+  overflow: hidden;
+}
+
+.car-showcase::before {
+  content: '';
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(76, 201, 240, 0.15), transparent 70%);
+  top: -15%;
+  right: -15%;
+  border-radius: 50%;  animation: pulse 10s infinite alternate;
+}
+
+.car-showcase::after {
+  content: '';
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(circle, rgba(67, 97, 238, 0.1), transparent 70%);
+  bottom: -10%;
+  left: -10%;
+  border-radius: 50%;  animation: pulse 12s infinite alternate-reverse;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 0.5; }
+}
+
+/* Filter Controls */
+.car-filters {
+  position: relative;  margin-bottom: 2.5rem;
+  perspective: 1000px;
+  transition: transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.filter-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 30px;
+  color: #1a1a2e;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 24px;
+  margin: 0 6px 10px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.5px;
+}
+
+.filter-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-gradient);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.filter-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(67, 97, 238, 0.15);
+  color: #1a1a2e;
+}
+
+.filter-btn.active {
+  background: var(--primary-gradient);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 8px 20px rgba(67, 97, 238, 0.25);
+}
+
+.filter-btn.active::before {
+  opacity: 1;
+}
+
+/* Car Gallery - 3D Horizontal Scroll */
+.car-gallery {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 25px;
+  padding: 35px 25px;
+  position: relative;  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  perspective: 1000px;
+}
+
+.car-gallery::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Car Card - Futuristic Glass Design */
+.car-card {
+  min-width: 340px;
+  height: 420px;
+  scroll-snap-align: center;
+  position: relative;
+  perspective: 1500px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+  animation: fadeSlideUp 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) translateZ(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+.car-card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.215, 0.61, 0.355, 1);
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px var(--shadow-color);
+}
+
+.car-image {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  border-radius: 25px 25px 0 0;
+}
+
+.car-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));  pointer-events: none;
+}
+
+.car-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.car-tag {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(247, 37, 133, 0.85);
+  color: white;
+  padding: 7px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 5px 15px rgba(247, 37, 133, 0.25);
+  letter-spacing: 0.5px;
+}
+
+.car-details {
+  padding: 25px;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 0 0 25px 25px;
+  border-top: 1px solid var(--glass-border);
+  height: calc(100% - 220px);
+  display: flex;
+  flex-direction: column;
+  position: relative;}
+
+.car-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.car-name::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  height: 3px;
+  background: var(--primary-gradient);
+  border-radius: 3px;
+}
+
+.car-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.car-meta span {
+  background: rgba(242, 242, 242, 0.7);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: 7px 12px;
+  border-radius: 8px;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.car-meta span:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.08);
+}
+
+.car-meta i {
+  color: #4361ee;
+  font-size: 14px;
+}
+
+.car-price {
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+
+.car-price .amount {
+  font-size: 28px;
+  font-weight: 700;
+  background: var(--primary-gradient);
+    background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.car-price .period {
+  font-size: 15px;
+  color: #666;
+  font-weight: 500;
+}
+
+.car-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-book {
+  flex: 1;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(67, 97, 238, 0.25);
+  letter-spacing: 0.5px;
+}
+
+.btn-book:hover {
+  background: var(--hover-gradient);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(67, 97, 238, 0.35);
+  color: white;
+}
+
+.btn-book::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 100%;
+  top: 0;
+  left: -40px;
+  background: rgba(255, 255, 255, 0.3);
+  transform: skewX(-30deg);
+  transition: all 0.8s cubic-bezier(0.215, 0.61, 0.355, 1);
+  filter: blur(5px);
+}
+
+.btn-book:hover::after {
+  left: 120%;
+}
+
+.btn-call {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  color: #1a1a2e;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.btn-call:hover {
+  background: rgba(26, 26, 46, 0.9);
+  color: transparent;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover Effect */
+.car-card:hover .car-card-inner {
+  transform: translateZ(20px);
+  box-shadow: 0 25px 50px rgba(0, 35, 80, 0.15);
+}
+
+.car-card:hover .car-image img {
+  transform: scale(1.08);
+}
+
+/* Navigation Controls - Floating Futuristic Controls */
+.gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 50px;
+  pointer-events: none;
+}
+
+.nav-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: transparent;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #1a1a2e;
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+  pointer-events: auto;
+  box-shadow: 0 10px 25px var(--shadow-color);
+  animation: fadeIn 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+.nav-btn:hover {
+  background: var(--primary-gradient);
+  color: transparent;
+  transform: scale(1.1);
+  box-shadow: 0 15px 35px rgba(67, 97, 238, 0.25);
+}
+
+.nav-btn.prev {
+  left: -30px;
+  animation-delay: 0.2s;
+}
+
+.nav-btn.next {
+  right: -30px;
+  animation-delay: 0.3s;
+}
+
+.nav-btn i {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.nav-btn:hover i {
+  transform: scale(1.2);
+}
+
+/* Empty State - Futuristic Notification */
+.no-cars {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 40px;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 25px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 50px var(--shadow-color);
+  animation: fadeIn 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.no-cars .icon {
+  font-size: 60px;
+  color: #ccd;
+  margin-bottom: 25px;
+  display: inline-block;
+  animation: float 3s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.no-cars h3 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #1a1a2e;
+  letter-spacing: -0.5px;
+}
+
+.no-cars p {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto 25px;
+}
+
+/* View All Button - Orbital Button */
+.view-all-wrapper {
+  text-align: center;
+  margin-top: 50px;
+  position: relative;
+}
+
+.view-all {
+  display: inline-block;
+  padding: 16px 36px;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--primary-gradient);
+  color: white;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+  box-shadow: 0 10px 25px rgba(67, 97, 238, 0.25);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.5px;
+}
+
+.view-all:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(67, 97, 238, 0.35);
+}
+
+.view-all::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: var(--primary-gradient);
+  border-radius: 55px;
+  opacity: 0.4;
+  animation: pulse 2s infinite;
+}
+
+/* Scrollbar for browsers that support it */
+.car-gallery::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 991px) {
+  .car-gallery {
+    padding: 25px 15px;
+  }
+  
+  .car-card {
+    min-width: 300px;
+    height: 400px;
+  }
+  
+  .gallery-nav {
+    padding: 0 25px;
+  }
+}
+
+@media (max-width: 767px) {
+  .car-showcase {
+    padding: 30px 0;
+  }
+  
+  .car-card {
+    min-width: 280px;
+    height: 380px;
+  }
+  
+  .car-name {
+    font-size: 18px;
+  }
+  
+  .car-price .amount {
+    font-size: 24px;
+  }
+  
+  .btn-book {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+  
+  .btn-call {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .nav-btn {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .car-card {
+    min-width: 260px;
+    height: 360px;
+  }
+  
+  .car-image {
+    height: 180px;
+  }
+  
+  .car-details {
+    padding: 20px;
+  }
+  
+  .car-meta span {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  
+  .car-price .amount {
+    font-size: 22px;
+  }
+  
+  .view-all {
+    padding: 14px 30px;
+    font-size: 15px;
+  }
+}
+
+/* 3D Scene Effect - Parallax on Mouse Move */
+.car-showcase.with-parallax {
+  perspective: 1000px;
+}
+
+.parallax-layer {
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out;
+}
