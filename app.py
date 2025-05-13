@@ -64,19 +64,21 @@ def login():
         return render_template('login.html')
     
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
         
-        user_data = users_collection.find_one({"username": username})
-        if user_data and check_password_hash(user_data['password'], password):
-            user = User(user_data['_id'], user_data['username'], user_data['email'], user_data.get('admin', False))
+        user_data = users_collection.find_one({"email": email})
+        if user_data and user_data['password'] == password:
+            user = User(str(user_data['_id']), user_data['username'], user_data['email'], user_data.get('admin', False))
             login_user(user)
             asian_time_zone = pytz.timezone('Asia/Kolkata')
             current_time = datetime.now(asian_time_zone).strftime("%Y-%m-%d %H:%M:%S")
-            users_collection.update_one({"_id": user.id}, {"$set": {"last_login": current_time}})
-            flash('Login successful!', 'success')            
+            users_collection.update_one({"_id": ObjectId(user.id)}, {"$set": {"last_login": current_time}})
+            flash('Login successful!', 'success')         
+            print("User logged in:", user.username)   
             return redirect(url_for('dashboard'))
         else:
+            print("Invalid login attempt:", email)
             flash('Invalid username or password', 'danger')
             return redirect(url_for('login'))
 
@@ -102,17 +104,17 @@ def register():
         asia_time_zone = pytz.timezone('Asia/Kolkata')
         current_time = datetime.now(asia_time_zone).strftime("%Y-%m-%d %H:%M:%S")
 
-        hashed_password = generate_password_hash(password, method='sha256')
-        user_id = users_collection.insert_one({
+        #hashed_password = generate_password_hash(password)
+        result = users_collection.insert_one({
             "username": username,
             "email": email,
-            "password": hashed_password,
+            "password": password,
             "created_at": current_time,
             "last_login": None,
             "admin": False
         })
         
-        user = User(user_id, username, email)
+        user = User(result.inserted_id, username, email, False)
         login_user(user)
         
         return redirect(url_for('dashboard'))
