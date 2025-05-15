@@ -1,0 +1,853 @@
+{% extends "admin_base.html" %}
+
+{% block title %}AlexaCars - Admin Dashboard{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.css">
+{% endblock %}
+
+{% block content %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">Manage Bookings</h1>
+        <p class="page-subtitle">View and manage all vehicle bookings</p>
+      </div>
+      <div class="header-actions">
+        <span class="date-display" id="current-date"></span>
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Booking Stats Overview -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">Active Bookings</span>
+          <div class="stat-icon">
+            <i class="fas fa-car"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ active_bookings|length }}</div>
+        <div class="stat-description">Currently active rentals</div>
+      </div>
+
+      <div class="stat-card warning">
+        <div class="stat-header">
+          <span class="stat-title">Upcoming Bookings</span>
+          <div class="stat-icon warning">
+            <i class="fas fa-hourglass-start"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ upcoming_bookings|length }}</div>
+        <div class="stat-description">Starting in the next 48 hours</div>
+      </div>
+
+      <div class="stat-card success">
+        <div class="stat-header">
+          <span class="stat-title">Ending Soon</span>
+          <div class="stat-icon success">
+            <i class="fas fa-hourglass-end"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ ending_soon|length }}</div>
+        <div class="stat-description">Ending in the next 48 hours</div>
+      </div>
+
+      <div class="stat-card danger">
+        <div class="stat-header">
+          <span class="stat-title">Month's Revenue</span>
+          <div class="stat-icon danger">
+            <i class="fas fa-rupee-sign"></i>
+          </div>
+        </div>
+        <div class="stat-value">₹{{ monthly_revenue }}</div>
+        <div class="stat-description">From all rentals this month</div>
+      </div>
+    </div>
+
+    <!-- Booking Management Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Booking List</h2>
+        <div class="card-actions">
+          <div class="search-container">
+            <input type="text" id="bookingSearch" placeholder="Search bookings..." class="search-input">
+            <i class="fas fa-search search-icon"></i>
+          </div>
+          <div class="filter-container">
+            <select id="statusFilter" class="filter-select">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button id="todayFilter" class="action-btn-primary">
+              <i class="fas fa-calendar-day"></i> Today's Activity
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Tabs for different views -->
+        <div class="tabs-container">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="all">All Bookings</button>
+            <button class="tab-btn" data-tab="active">Active</button>
+            <button class="tab-btn" data-tab="upcoming">Upcoming</button>
+            <button class="tab-btn" data-tab="ending">Ending Soon</button>
+            <button class="tab-btn" data-tab="completed">Completed</button>
+          </div>
+          
+          <!-- All Bookings Tab -->
+          <div class="tab-content active" id="all">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Source</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if bookings|length > 0 %}
+                    {% for booking in bookings %}
+                    <tr class="booking-row" data-status="{{ booking.status }}">
+                      <td>#{{ booking._id|string|truncate(8, True, '') }}</td>
+                      <td>{{ booking.customer_name }}</td>
+                      <td>{{ booking.car_name }}</td>
+                      <td>{{ booking.start_date }}</td>
+                      <td>{{ booking.end_date }}</td>
+                      <td>₹{{ booking.total_price }}</td>
+                      <td>
+                        <span class="badge badge-{{ 
+                          'primary' if booking.status == 'upcoming' else 
+                          'success' if booking.status == 'active' else 
+                          'warning' if booking.status == 'completed' else 
+                          'danger' 
+                        }}">
+                          {{ booking.status|capitalize }}
+                        </span>
+                      </td>
+                      <td>
+                        {% if booking.inquiry_id %}
+                        <span class="badge badge-info" title="From Inquiry">Inquiry</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Direct</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <div class="action-buttons">
+                          <a href="/admin/bookings/view/{{ booking._id }}" class="action-btn action-btn-primary">
+                            <i class="fas fa-eye"></i> View
+                          </a>
+                          <button class="action-btn" onclick="updateStatus('{{ booking._id }}')">
+                            <i class="fas fa-edit"></i> Update
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="9" class="text-center py-4">No bookings found.</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Active Bookings Tab -->
+          <div class="tab-content" id="active">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Days Left</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if active_bookings|length > 0 %}
+                    {% for booking in active_bookings %}
+                    <tr>
+                      <td>#{{ booking._id|string|truncate(8, True, '') }}</td>
+                      <td>{{ booking.customer_name }}</td>
+                      <td>{{ booking.car_name }}</td>
+                      <td>{{ booking.start_date }}</td>
+                      <td>{{ booking.end_date }}</td>
+                      <td>{{ booking.days_left }}</td>
+                      <td>₹{{ booking.total_price }}</td>
+                      <td>
+                        <div class="action-buttons">
+                          <a href="/admin/bookings/view/{{ booking._id }}" class="action-btn action-btn-primary">
+                            <i class="fas fa-eye"></i> View
+                          </a>
+                          <button class="action-btn" onclick="markComplete('{{ booking._id }}')">
+                            <i class="fas fa-check"></i> Complete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="8" class="text-center py-4">No active bookings found.</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Upcoming Bookings Tab -->
+          <div class="tab-content" id="upcoming">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Start Date</th>
+                    <th>Starting In</th>
+                    <th>End Date</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if upcoming_bookings|length > 0 %}
+                    {% for booking in upcoming_bookings %}
+                    <tr>
+                      <td>#{{ booking._id|string|truncate(8, True, '') }}</td>
+                      <td>{{ booking.customer_name }}</td>
+                      <td>{{ booking.car_name }}</td>
+                      <td>{{ booking.start_date }}</td>
+                      <td>{{ booking.starts_in }}</td>
+                      <td>{{ booking.end_date }}</td>
+                      <td>₹{{ booking.total_price }}</td>
+                      <td>
+                        <div class="action-buttons">
+                          <a href="/admin/bookings/view/{{ booking._id }}" class="action-btn action-btn-primary">
+                            <i class="fas fa-eye"></i> View
+                          </a>
+                          <button class="action-btn" onclick="markActive('{{ booking._id }}')">
+                            <i class="fas fa-play"></i> Start Now
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="8" class="text-center py-4">No upcoming bookings found.</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Ending Soon Tab -->
+          <div class="tab-content" id="ending">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>End Date</th>
+                    <th>Ending In</th>
+                    <th>Duration</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if ending_soon|length > 0 %}
+                    {% for booking in ending_soon %}
+                    <tr>
+                      <td>#{{ booking._id|string|truncate(8, True, '') }}</td>
+                      <td>{{ booking.customer_name }}</td>
+                      <td>{{ booking.car_name }}</td>
+                      <td>{{ booking.end_date }}</td>
+                      <td>{{ booking.ends_in }}</td>
+                      <td>{{ booking.days }} days</td>
+                      <td>₹{{ booking.total_price }}</td>
+                      <td>
+                        <div class="action-buttons">
+                          <a href="/admin/bookings/view/{{ booking._id }}" class="action-btn action-btn-primary">
+                            <i class="fas fa-eye"></i> View
+                          </a>
+                          <button class="action-btn" onclick="extendBooking('{{ booking._id }}')">
+                            <i class="fas fa-calendar-plus"></i> Extend
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="8" class="text-center py-4">No bookings ending soon.</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Completed Tab -->
+          <div class="tab-content" id="completed">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Period</th>
+                    <th>Duration</th>
+                    <th>Total</th>
+                    <th>Completed On</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if completed_bookings|length > 0 %}
+                    {% for booking in completed_bookings %}
+                    <tr>
+                      <td>#{{ booking._id|string|truncate(8, True, '') }}</td>
+                      <td>{{ booking.customer_name }}</td>
+                      <td>{{ booking.car_name }}</td>
+                      <td>{{ booking.start_date }} to {{ booking.end_date }}</td>
+                      <td>{{ booking.days }} days</td>
+                      <td>₹{{ booking.total_price }}</td>
+                      <td>{{ booking.completed_at }}</td>
+                      <td>
+                        <div class="action-buttons">
+                          <a href="/admin/bookings/view/{{ booking._id }}" class="action-btn action-btn-primary">
+                            <i class="fas fa-eye"></i> View
+                          </a>
+                          <button class="action-btn" onclick="generateInvoice('{{ booking._id }}')">
+                            <i class="fas fa-file-invoice"></i> Invoice
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="8" class="text-center py-4">No completed bookings found.</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Today's Activity Card -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h2 class="card-title">Today's Activity</h2>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="activity-section">
+              <h3 class="section-title">Pick-ups Today ({{ pickups_today|length }})</h3>
+              {% if pickups_today|length > 0 %}
+                <div class="activity-list">
+                  {% for booking in pickups_today %}
+                  <div class="activity-item">
+                    <div class="activity-icon pickup">
+                      <i class="fas fa-car-side"></i>
+                    </div>
+                    <div class="activity-content">
+                      <div class="activity-title">{{ booking.car_name }} - {{ booking.customer_name }}</div>
+                      <div class="activity-details">
+                        <span><i class="fas fa-clock"></i> {{ booking.start_time or 'Not specified' }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ booking.pickup_location or 'Not specified' }}</span>
+                      </div>
+                      <div class="activity-actions">
+                        <a href="/admin/bookings/view/{{ booking._id }}" class="activity-btn">View Details</a>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="empty-activity">
+                  <i class="fas fa-calendar-check"></i>
+                  <p>No pick-ups scheduled for today</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="activity-section">
+              <h3 class="section-title">Returns Today ({{ returns_today|length }})</h3>
+              {% if returns_today|length > 0 %}
+                <div class="activity-list">
+                  {% for booking in returns_today %}
+                  <div class="activity-item">
+                    <div class="activity-icon return">
+                      <i class="fas fa-undo-alt"></i>
+                    </div>
+                    <div class="activity-content">
+                      <div class="activity-title">{{ booking.car_name }} - {{ booking.customer_name }}</div>
+                      <div class="activity-details">
+                        <span><i class="fas fa-clock"></i> {{ booking.end_time or 'Not specified' }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ booking.return_location or 'Not specified' }}</span>
+                      </div>
+                      <div class="activity-actions">
+                        <a href="/admin/bookings/view/{{ booking._id }}" class="activity-btn">View Details</a>
+                        <button class="activity-btn-primary" onclick="markComplete('{{ booking._id }}')">Complete Return</button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="empty-activity">
+                  <i class="fas fa-calendar-times"></i>
+                  <p>No returns scheduled for today</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Set current date display
+    document.addEventListener('DOMContentLoaded', function() {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', options);
+      
+      // Tab navigation
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons and contents
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          
+          // Add active class to clicked button and corresponding content
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Search functionality
+      document.getElementById('bookingSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const activeTab = document.querySelector('.tab-content.active');
+        const rows = activeTab.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+      
+      // Status filter
+      document.getElementById('statusFilter').addEventListener('change', function() {
+        const status = this.value;
+        const rows = document.querySelectorAll('.booking-row');
+        
+        if (status === 'all') {
+          rows.forEach(row => row.style.display = '');
+          return;
+        }
+        
+        rows.forEach(row => {
+          if (row.getAttribute('data-status') === status) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+      
+      // Today's filter
+      document.getElementById('todayFilter').addEventListener('click', function() {
+        // Switch to all bookings tab first
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        document.querySelector('[data-tab="all"]').classList.add('active');
+        document.getElementById('all').classList.add('active');
+        
+        // Scroll to today's activity section
+        const activityCard = document.querySelector('.card.mt-4');
+        activityCard.scrollIntoView({ behavior: 'smooth' });
+      });
+      
+      // Form submissions
+      document.getElementById('submitStatusUpdate').addEventListener('click', function() {
+        document.getElementById('updateForm').submit();
+      });
+      
+      document.getElementById('submitExtension').addEventListener('click', function() {
+        document.getElementById('extendForm').submit();
+      });
+      
+      // Close modal functionality
+      document.querySelectorAll('[data-dismiss="modal"]').forEach(element => {
+        element.addEventListener('click', function() {
+          document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+          });
+        });
+      });
+      
+      // Close when clicking outside
+      window.addEventListener('click', function(event) {
+        document.querySelectorAll('.modal').forEach(modal => {
+          if (event.target === modal) {
+            modal.style.display = 'none';
+          }
+        });
+      });
+      
+      // Alert close functionality
+      document.querySelectorAll('.close-alert').forEach(button => {
+        button.addEventListener('click', function() {
+          this.parentElement.style.display = 'none';
+        });
+      });
+    });
+    
+    // Status update modal
+    function updateStatus(bookingId) {
+      document.getElementById('bookingId').value = bookingId;
+      document.getElementById('statusModal').style.display = 'block';
+    }
+    
+    // Mark booking as active
+    function markActive(bookingId) {
+      document.getElementById('bookingId').value = bookingId;
+      document.getElementById('bookingStatus').value = 'active';
+      document.getElementById('statusNotes').value = 'Booking started early by administrator.';
+      document.getElementById('updateForm').submit();
+    }
+    
+    // Mark booking as complete
+    function markComplete(bookingId) {
+      document.getElementById('bookingId').value = bookingId;
+      document.getElementById('bookingStatus').value = 'completed';
+      document.getElementById('statusNotes').value = 'Booking completed by administrator.';
+      document.getElementById('updateForm').submit();
+    }
+    
+    // Extend booking
+    function extendBooking(bookingId) {
+      // You would typically fetch booking details from server
+      // For now we'll use placeholders
+      document.getElementById('extendBookingId').value = bookingId;
+      document.getElementById('currentEndDate').value = 'Fetching...';
+      document.getElementById('dailyRate').textContent = 'Fetching...';
+      
+      // Fetch booking details via AJAX
+      fetch(`/admin/bookings/details/${bookingId}`)
+        .then(response => response.json())
+        .then(booking => {
+          document.getElementById('currentEndDate').value = booking.end_date;
+          document.getElementById('dailyRate').textContent = `₹${booking.price_per_day}`;
+          
+          // Set minimum date for new end date input to be after current end date
+          const currentEndDate = new Date(booking.end_date);
+          const nextDay = new Date(currentEndDate);
+          nextDay.setDate(nextDay.getDate() + 1);
+          
+          const minDateStr = nextDay.toISOString().split('T')[0];
+          document.getElementById('newEndDate').min = minDateStr;
+          document.getElementById('newEndDate').value = minDateStr;
+          
+          // Calculate additional amount when date changes
+          document.getElementById('newEndDate').addEventListener('change', function() {
+            const newEndDate = new Date(this.value);
+            const daysDiff = Math.floor((newEndDate - currentEndDate) / (1000 * 60 * 60 * 24));
+            const additionalAmount = daysDiff * booking.price_per_day;
+            document.getElementById('additionalAmount').value = additionalAmount;
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching booking details:', error);
+          alert('Failed to load booking details. Please try again.');
+        });
+      
+      document.getElementById('extendModal').style.display = 'block';
+    }
+    
+    // Generate invoice
+    function generateInvoice(bookingId) {
+      window.open(`/admin/bookings/invoice/${bookingId}`, '_blank');
+    }
+  </script>
+
+  <style>
+    /* Additional Styles for Booking Management */
+    .tabs-container {
+      margin-bottom: 20px;
+    }
+    
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--gray-300);
+      margin-bottom: 20px;
+      padding-bottom: 1px;
+    }
+    
+    .tab-btn {
+      padding: 10px 20px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--gray-600);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    
+    .tab-btn:hover {
+      color: var(--primary-color);
+    }
+    
+    .tab-btn.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease forwards;
+    }
+    
+    /* Today's Activity Styles */
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 -15px;
+    }
+    
+    .col-md-6 {
+      flex: 0 0 50%;
+      max-width: 50%;
+      padding: 0 15px;
+    }
+    
+    @media (max-width: 768px) {
+      .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+      
+      .col-md-6:last-child {
+        margin-top: 20px;
+      }
+    }
+    
+    .activity-section {
+      height: 100%;
+      min-height: 300px;
+    }
+    
+    .activity-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .activity-item {
+      display: flex;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    
+    .activity-icon.pickup {
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--primary-color);
+    }
+    
+    .activity-icon.return {
+      background: rgba(247, 37, 133, 0.1);
+      color: var(--warning-color);
+    }
+    
+    .activity-content {
+      flex: 1;
+    }
+    
+    .activity-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--gray-800);
+    }
+    
+    .activity-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-bottom: 10px;
+    }
+    
+    .activity-details i {
+      margin-right: 5px;
+    }
+    
+    .activity-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .activity-btn {
+      padding: 6px 12px;
+      background: var(--gray-100);
+      color: var(--gray-700);
+      border-radius: 4px;
+      font-size: 13px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.3s;
+    }
+    
+    .activity-btn:hover {
+      background: var(--gray-200);
+    }
+    
+    .activity-btn-primary {
+      padding: 6px 12px;
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--primary-color);
+      border-radius: 4px;
+      font-size: 13px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .activity-btn-primary:hover {
+      background: rgba(67, 97, 238, 0.2);
+    }
+    
+    .empty-activity {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+      color: var(--gray-500);
+    }
+    
+    .empty-activity i {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+    
+    .empty-activity p {
+      font-size: 15px;
+    }
+    
+    .mt-4 {
+      margin-top: 1.5rem;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .py-4 {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+    
+    .text-muted {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+    }
+
+    .badge-info {
+      background: rgba(13, 202, 240, 0.1);
+      color: #0dcaf0;
+    }
+    
+    .badge-secondary {
+      background: rgba(108, 117, 125, 0.1);
+      color: #6c757d;
+    }
+  </style>
+
+{% endblock %}

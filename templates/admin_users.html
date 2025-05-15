@@ -1,0 +1,515 @@
+{% extends "admin_base.html" %}
+
+{% block title %}AlexaCars - Admin Dashboard{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.css">
+{% endblock %}
+
+{% block content %}
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">Manage Users</h1>
+        <p class="page-subtitle">View, edit, and manage user accounts</p>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/users/add" class="btn-primary">
+          <i class="fas fa-user-plus"></i> Add New User
+        </a>
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- User Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">Total Users</span>
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-description">Registered accounts</div>
+      </div>
+
+      <div class="stat-card success">
+        <div class="stat-header">
+          <span class="stat-title">Active Users</span>
+          <div class="stat-icon success">
+            <i class="fas fa-user-check"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ active_users }}</div>
+        <div class="stat-description">Enabled accounts</div>
+      </div>
+
+      <div class="stat-card warning">
+        <div class="stat-header">
+          <span class="stat-title">Admin Users</span>
+          <div class="stat-icon warning">
+            <i class="fas fa-user-shield"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ admin_users }}</div>
+        <div class="stat-description">With admin privileges</div>
+      </div>
+
+      <div class="stat-card danger">
+        <div class="stat-header">
+          <span class="stat-title">New This Month</span>
+          <div class="stat-icon danger">
+            <i class="fas fa-user-plus"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ new_users }}</div>
+        <div class="stat-description">Recent registrations</div>
+      </div>
+    </div>
+
+    <!-- User Management Tools -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">User Accounts</h2>
+        <div class="card-actions">
+          <div class="search-container">
+            <form id="searchForm" action="/admin/users" method="GET">
+              <input type="text" id="userSearch" name="search" placeholder="Search users..." class="search-input" value="{{ search_query }}">
+              <i class="fas fa-search search-icon"></i>
+            </form>
+          </div>
+          <div class="filter-container">
+            <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+              <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Users</option>
+              <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Only</option>
+              <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+              <option value="admin" {% if status_filter == 'admin' %}selected{% endif %}>Admins Only</option>
+            </select>
+            <select id="sortBy" class="filter-select" onchange="applyFilters()">
+              <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+              <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+              <option value="email_asc" {% if sort_by == 'email_asc' %}selected{% endif %}>Email (A-Z)</option>
+              <option value="email_desc" {% if sort_by == 'email_desc' %}selected{% endif %}>Email (Z-A)</option>
+              <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Recently Active</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if users|length > 0 %}
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Role</th>
+                  <th class="text-center">Last Login</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user_item in users %}
+                <tr id="user-row-{{ user_item._id }}">
+                  <td>
+                    <div class="user-info-cell">
+                      <div class="user-avatar small">{{ user_item.first_name[0] }}</div>
+                      <div class="user-details">
+                        <div class="user-name" style="color: rgb(69, 69, 69);">{{ user_item.first_name }} {{ user_item.last_name }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ user_item.email }}</td>
+                  <td>{{ user_item.phone }}</td>
+                  <td>
+                    <span class="badge {% if user_item.get('active', True) %}badge-success{% else %}badge-secondary{% endif %} user-status">
+                      {{ 'Active' if user_item.get('active', True) else 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge {% if user_item.get('admin', False) %}badge-warning{% else %}badge-primary{% endif %}">
+                      {{ 'Administrator' if user_item.get('admin', False) else 'Customer' }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    {% if user_item.get('last_login') %}
+                      <span title="{{ user_item.last_login }}">{{ user_item.last_login.split(' ')[0] if ' ' in user_item.last_login else user_item.last_login }}</span>
+                    {% else %}
+                      <span class="text-muted">Never</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <div class="action-buttons">
+                      <a href="/admin/users/view/{{ user_item._id }}" class="action-btn action-btn-outline" title="View User">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <a href="/admin/users/edit/{{ user_item._id }}" class="action-btn action-btn-primary" title="Edit User">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      {% if user_item._id|string != user.id %}
+                        <button type="button" class="action-btn toggle-admin-btn" title="{{ 'Remove admin rights' if user_item.get('admin', False) else 'Grant admin rights' }}" data-user-id="{{ user_item._id }}" data-status-type="admin" data-current="{{ 'true' if user_item.get('admin', False) else 'false' }}">
+                          <i class="fas {% if user_item.get('admin', False) %}fa-user-minus{% else %}fa-user-shield{% endif %}"></i>
+                        </button>
+                        <button type="button" class="action-btn {% if user_item.get('active', True) %}action-btn-danger{% else %}action-btn-success{% endif %} toggle-active-btn" title="{{ 'Deactivate user' if user_item.get('active', True) else 'Activate user' }}" data-user-id="{{ user_item._id }}" data-status-type="active" data-current="{{ 'true' if user_item.get('active', True) else 'false' }}">
+                          <i class="fas {% if user_item.get('active', True) %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                        </button>
+                        <button type="button" class="action-btn action-btn-danger delete-user-btn" title="Delete User" data-user-id="{{ user_item._id }}" data-user-name="{{ user_item.first_name }} {{ user_item.last_name }}">
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      {% else %}
+                        <span class="action-btn disabled" title="Cannot modify your own account">
+                          <i class="fas fa-lock"></i>
+                        </span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h3>No users found</h3>
+            <p>No users matching the current filters were found.</p>
+            <a href="/admin/users" class="btn-primary">
+              <i class="fas fa-sync"></i> Reset Filters
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal" id="deleteModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Delete User</h3>
+          <button type="button" class="close-modal" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong id="userName"></strong>?</p>
+          <p class="text-danger">This action cannot be undone if the user has no bookings or inquiries.</p>
+          <p>If the user has bookings or inquiries, they will be deactivated instead of deleted.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-danger" id="confirmDelete">Delete User</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Apply filters
+    function applyFilters() {
+      const statusFilter = document.getElementById('statusFilter').value;
+      const sortBy = document.getElementById('sortBy').value;
+      const searchQuery = document.getElementById('userSearch').value;
+      
+      window.location.href = `/admin/users?search=${encodeURIComponent(searchQuery)}&status=${statusFilter}&sort=${sortBy}`;
+    }
+    
+    // Search functionality
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      applyFilters();
+    });
+    
+    // Toggle admin status
+    document.querySelectorAll('.toggle-admin-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-user-id');
+        const statusType = this.getAttribute('data-status-type');
+        const currentStatus = this.getAttribute('data-current') === 'true';
+        
+        toggleUserStatus(userId, statusType, currentStatus, this);
+      });
+    });
+    
+    // Toggle active status
+    document.querySelectorAll('.toggle-active-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-user-id');
+        const statusType = this.getAttribute('data-status-type');
+        const currentStatus = this.getAttribute('data-current') === 'true';
+        
+        toggleUserStatus(userId, statusType, currentStatus, this);
+      });
+    });
+    
+    // Delete user
+    document.querySelectorAll('.delete-user-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-user-id');
+        const userName = this.getAttribute('data-user-name');
+        
+        document.getElementById('userName').textContent = userName;
+        document.getElementById('confirmDelete').setAttribute('data-user-id', userId);
+        
+        document.getElementById('deleteModal').style.display = 'block';
+      });
+    });
+    
+    // Confirm delete
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+      const userId = this.getAttribute('data-user-id');
+      
+      fetch(`/admin/users/delete/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          const alertHTML = `
+            <div class="alert alert-success">
+              <i class="fas fa-check-circle"></i>
+              ${data.message}
+              <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+            </div>
+          `;
+          
+          document.querySelector('.header').insertAdjacentHTML('afterend', alertHTML);
+          
+          // Close modal
+          document.getElementById('deleteModal').style.display = 'none';
+          
+          // If deactivated instead of deleted, update the UI
+          if (data.deactivated) {
+            const row = document.getElementById(`user-row-${userId}`);
+            const statusBadge = row.querySelector('.user-status');
+            statusBadge.classList.remove('badge-success');
+            statusBadge.classList.add('badge-secondary');
+            statusBadge.textContent = 'Inactive';
+            
+            // Update the toggle button
+            const toggleButton = row.querySelector('.toggle-active-btn');
+            toggleButton.setAttribute('data-current', 'false');
+            toggleButton.setAttribute('title', 'Activate user');
+            toggleButton.classList.remove('action-btn-danger');
+            toggleButton.classList.add('action-btn-success');
+            toggleButton.querySelector('i').classList.remove('fa-user-slash');
+            toggleButton.querySelector('i').classList.add('fa-user-check');
+          } else {
+            // Remove the row if fully deleted
+            document.getElementById(`user-row-${userId}`).remove();
+          }
+          
+          // Setup close button for the new alert
+          setupAlertCloseButtons();
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while trying to delete the user');
+      });
+    });
+    
+    // Close modal
+    document.querySelectorAll('[data-dismiss="modal"]').forEach(element => {
+      element.addEventListener('click', function() {
+        document.getElementById('deleteModal').style.display = 'none';
+      });
+    });
+    
+    // Close when clicking outside the modal
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('deleteModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+    
+    // Toggle user status (admin or active)
+    function toggleUserStatus(userId, statusType, currentStatus, button) {
+      fetch(`/admin/users/toggle-status/${userId}/${statusType}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          const alertHTML = `
+            <div class="alert alert-success">
+              <i class="fas fa-check-circle"></i>
+              ${data.message}
+              <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+            </div>
+          `;
+          
+          document.querySelector('.header').insertAdjacentHTML('afterend', alertHTML);
+          
+          // Update UI based on status type
+          if (statusType === 'admin') {
+            const row = document.getElementById(`user-row-${userId}`);
+            const roleBadge = row.querySelector('td:nth-child(5) .badge');
+            
+            if (data.new_status) {
+              roleBadge.classList.remove('badge-primary');
+              roleBadge.classList.add('badge-warning');
+              roleBadge.textContent = 'Administrator';
+              
+              button.setAttribute('data-current', 'true');
+              button.setAttribute('title', 'Remove admin rights');
+              button.querySelector('i').classList.remove('fa-user-shield');
+              button.querySelector('i').classList.add('fa-user-minus');
+            } else {
+              roleBadge.classList.remove('badge-warning');
+              roleBadge.classList.add('badge-primary');
+              roleBadge.textContent = 'Customer';
+              
+              button.setAttribute('data-current', 'false');
+              button.setAttribute('title', 'Grant admin rights');
+              button.querySelector('i').classList.remove('fa-user-minus');
+              button.querySelector('i').classList.add('fa-user-shield');
+            }
+          } else if (statusType === 'active') {
+            const row = document.getElementById(`user-row-${userId}`);
+            const statusBadge = row.querySelector('.user-status');
+            
+            if (data.new_status) {
+              statusBadge.classList.remove('badge-secondary');
+              statusBadge.classList.add('badge-success');
+              statusBadge.textContent = 'Active';
+              
+              button.setAttribute('data-current', 'true');
+              button.setAttribute('title', 'Deactivate user');
+              button.classList.remove('action-btn-success');
+              button.classList.add('action-btn-danger');
+              button.querySelector('i').classList.remove('fa-user-check');
+              button.querySelector('i').classList.add('fa-user-slash');
+            } else {
+              statusBadge.classList.remove('badge-success');
+              statusBadge.classList.add('badge-secondary');
+              statusBadge.textContent = 'Inactive';
+              
+              button.setAttribute('data-current', 'false');
+              button.setAttribute('title', 'Activate user');
+              button.classList.remove('action-btn-danger');
+              button.classList.add('action-btn-success');
+              button.querySelector('i').classList.remove('fa-user-slash');
+              button.querySelector('i').classList.add('fa-user-check');
+            }
+          }
+          
+          // Setup close button for the new alert
+          setupAlertCloseButtons();
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while trying to update the user status');
+      });
+    }
+    
+    // Setup alert close buttons
+    function setupAlertCloseButtons() {
+      document.querySelectorAll('.close-alert').forEach(button => {
+        button.addEventListener('click', function() {
+          this.parentElement.style.display = 'none';
+        });
+      });
+    }
+    
+    // Initial setup
+    setupAlertCloseButtons();
+  </script>
+
+  <style>
+    .user-info-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .user-avatar.small {
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .action-btn {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    
+    .action-btn-success {
+      background-color: rgba(67, 170, 139, 0.1);
+      color: #43aa8b;
+      border: 1px solid rgba(67, 170, 139, 0.2);
+    }
+    
+    .action-btn-success:hover {
+      background-color: rgba(67, 170, 139, 0.2);
+    }
+    
+    .action-btn-danger {
+      background-color: rgba(230, 57, 70, 0.1);
+      color: var(--danger-color);
+      border: 1px solid rgba(230, 57, 70, 0.2);
+    }
+    
+    .action-btn-danger:hover {
+      background-color: rgba(230, 57, 70, 0.2);
+    }
+    
+    .action-btn.disabled {
+      background-color: var(--gray-200);
+      color: var(--gray-500);
+      border: 1px solid var(--gray-300);
+      cursor: not-allowed;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .text-muted {
+      color: var(--gray-500);
+    }
+  </style>
+
+{% endblock %}

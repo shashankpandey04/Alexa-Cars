@@ -1,286 +1,144 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>AlexaCars - Admin Dashboard</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='admin_cars.css') }}">
-</head>
-<body>
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <a href="/" class="brand">
-        <span class="brand-logo">Alexa<span class="brand-name">Cars</span></span>
-      </a>
+{% extends "admin_base.html" %}
+
+{% block title %}AlexaCars - Admin Dashboard{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.css">
+{% endblock %}
+
+{% block content %}
+<header class="header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Welcome back, {{ user.first_name }}</p>
+  </div>
+  <div class="header-actions">
+    <span id="current-date"></span>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+        {{ message }}
+        <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-header">
+      <span class="stat-title">Total Cars</span>
+      <div class="stat-icon">
+        <i class="fas fa-car"></i>
+      </div>
     </div>
+    <div class="stat-value">{{ cars|length }}</div>
+    <div class="stat-description">Available vehicles in fleet</div>
+  </div>
+
+  <div class="stat-card warning">
+    <div class="stat-header">
+      <span class="stat-title">Active Bookings</span>
+      <div class="stat-icon warning">
+        <i class="fas fa-calendar-check"></i>
+      </div>
+    </div>
+    <div class="stat-value">{{ booked_cars|length }}</div>
+    <div class="stat-description">Current rentals</div>
+  </div>
+
+  <div class="stat-card success">
+    <div class="stat-header">
+      <span class="stat-title">New Inquiries</span>
+      <div class="stat-icon success">
+        <i class="fas fa-comment-dots"></i>
+      </div>
+    </div>
+    <div class="stat-value">{{ inquiries|length }}</div>
+    <div class="stat-description">Awaiting response</div>
+  </div>
+
+  <div class="stat-card danger">
+    <div class="stat-header">
+      <span class="stat-title">Monthly Revenue</span>
+      <div class="stat-icon danger">
+        <i class="fas fa-rupee-sign"></i>
+      </div>
+    </div>
+    <div class="stat-value">₹{{ revenue }}</div>
+    <div class="stat-description">This month's earnings</div>
+  </div>
+</div>
+
+<!-- Recent Bookings -->
+<div class="dashboard-row">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Recent Bookings</h2>
+      <div class="card-actions">
+        <button class="card-btn"><i class="fas fa-ellipsis-v"></i></button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Customer</th>
+            <th>Vehicle</th>
+            <th>Dates</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in recent_bookings %}
+          <tr>
+            <td>#{{ booking._id }}</td>
+            <td>{{ booking.customer_name }}</td>
+            <td>{{ booking.car_name }}</td>
+            <td>{{ booking.start_date }} to {{ booking.end_date }}</td>
+            <td><span class="badge badge-success">{{ booking.status }}</span></td>
+            <td><a href="/admin/bookings/view/{{ booking._id }}" class="action-btn action-btn-primary"><i class="fas fa-eye"></i> View</a></td>
+          </tr>
+          {% endfor %}
+          {% if not recent_bookings %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 2rem;">No recent bookings found</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    <div style="text-align: center; margin-top: 1rem;">
+      <a href="/admin/bookings" class="view-all">View All Bookings</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
+<script>
+  // Display current date in the header
+  document.addEventListener('DOMContentLoaded', function() {
+    const dateElement = document.getElementById('current-date');
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dateElement.textContent = today.toLocaleDateString('en-US', options);
     
-    <div class="user-profile">
-      <div class="user-avatar">
-        {{ user.first_name[0] }}
-      </div>
-      <div class="user-info">
-        <div class="user-name">{{ user.first_name }}</div>
-        <div class="user-role">Administrator</div>
-      </div>
-    </div>
-    
-    <ul class="sidebar-menu">
-        <li class="sidebar-item">
-            <a href="/" class="sidebar-link">
-            <span class="sidebar-icon"><i class="fas fa-home"></i></span>
-            Home
-            </a>
-        </li>
-      <li class="sidebar-item">
-        <a href="/dashboard" class="sidebar-link active">
-          <span class="sidebar-icon"><i class="fas fa-tachometer-alt"></i></span>
-          Dashboard
-        </a>
-      </li>
-      <li class="sidebar-item">
-        <a href="/admin/cars" class="sidebar-link">
-          <span class="sidebar-icon"><i class="fas fa-car"></i></span>
-          Manage Cars
-        </a>
-      </li>
-      <li class="sidebar-item">
-        <a href="/admin/bookings" class="sidebar-link">
-          <span class="sidebar-icon"><i class="fas fa-calendar-check"></i></span>
-          Bookings
-        </a>
-      </li>
-      <li class="sidebar-item">
-        <a href="/admin/inquiries" class="sidebar-link">
-          <span class="sidebar-icon"><i class="fas fa-comment-dots"></i></span>
-          Inquiries
-        </a>
-      </li>
-      <li class="sidebar-item">
-        <a href="/admin/users" class="sidebar-link">
-          <span class="sidebar-icon"><i class="fas fa-users"></i></span>
-          Users
-        </a>
-      </li>
-    </ul>
-    
-    <div class="sidebar-footer">
-      <a href="/logout" class="logout-btn">
-        <span class="logout-icon"><i class="fas fa-sign-out-alt"></i></span>
-        Logout
-      </a>
-    </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <header class="header">
-      <div>
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">Welcome back, {{ user.first_name }}</p>
-      </div>
-      <div class="header-actions">
-        <span id="current-date"></span>
-      </div>
-    </header>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">
-            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
-            {{ message }}
-            <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-title">Total Cars</span>
-          <div class="stat-icon">
-            <i class="fas fa-car"></i>
-          </div>
-        </div>
-        <div class="stat-value">{{ cars|length }}</div>
-        <div class="stat-description">Available vehicles in fleet</div>
-        <!-- <div class="stat-trend up">
-          <i class="fas fa-arrow-up trend-icon"></i>
-          <span>5% from last month</span>
-        </div> -->
-      </div>
-
-      <div class="stat-card warning">
-        <div class="stat-header">
-          <span class="stat-title">Active Bookings</span>
-          <div class="stat-icon warning">
-            <i class="fas fa-calendar-check"></i>
-          </div>
-        </div>
-        <div class="stat-value">{{ booked_cars|length }}</div>
-        <div class="stat-description">Current rentals</div>
-        <!-- <div class="stat-trend up">
-          <i class="fas fa-arrow-up trend-icon"></i>
-          <span>12% from last month</span>
-        </div> -->
-      </div>
-
-      <div class="stat-card success">
-        <div class="stat-header">
-          <span class="stat-title">New Inquiries</span>
-          <div class="stat-icon success">
-            <i class="fas fa-comment-dots"></i>
-          </div>
-        </div>
-        <div class="stat-value">{{ inquiries|length }}</div>
-        <div class="stat-description">Awaiting response</div>
-        <!-- <div class="stat-trend up">
-          <i class="fas fa-arrow-up trend-icon"></i>
-          <span>8% from last month</span>
-        </div> -->
-      </div>
-
-      <div class="stat-card danger">
-        <div class="stat-header">
-          <span class="stat-title">Monthly Revenue</span>
-          <div class="stat-icon danger">
-            <i class="fas fa-rupee-sign"></i>
-          </div>
-        </div>
-        <div class="stat-value">₹{{ revenue }}</div>
-        <div class="stat-description">This month's earnings</div>
-        <!-- <div class="stat-trend up">
-          <i class="fas fa-arrow-up trend-icon"></i>
-          <span>15% from last month</span>
-        </div> -->
-      </div>
-    </div>
-
-    <!-- Dashboard Content -->
-    <div class="dashboard-row">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Recent Bookings</h2>
-          <div class="card-actions">
-            <button class="card-btn"><i class="fas fa-ellipsis-v"></i></button>
-          </div>
-        </div>
-        <div class="table-container">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Booking ID</th>
-                <th>Customer</th>
-                <th>Vehicle</th>
-                <th>Dates</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for booking in bookings %}
-              <tr>
-                <td>#{{ booking.id }}</td>
-                <td>{{ booking.customer_name }}</td>
-                <td>{{ booking.car_name }}</td>
-                <td>{{ booking.start_date }} to {{ booking.end_date }}</td>
-                <td><span class="badge badge-success">{{ booking.status }}</span></td>
-                <td><a href="/admin/bookings/{{ booking.id }}" class="action-btn action-btn-primary"><i class="fas fa-eye"></i> View</a></td>
-              </tr>
-              {% endfor %}
-              {% if not bookings %}
-              <tr>
-                <td colspan="6" style="text-align: center; padding: 2rem;">No recent bookings found</td>
-              </tr>
-              {% endif %}
-            </tbody>
-          </table>
-        </div>
-        <div style="text-align: center; margin-top: 1rem;">
-          <a href="/admin/bookings" class="view-all">View All Bookings</a>
-        </div>
-      </div>
-    <!--
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Revenue Overview</h2>
-            <div class="card-actions">
-              <button class="card-btn"><i class="fas fa-ellipsis-v"></i></button>
-            </div>
-          </div>
-          <div class="chart-container" id="revenue-chart"></div>
-        </div>
-      </div>
-
-    <div class="dashboard-row">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Fleet Usage</h2>
-          <div class="card-actions">
-            <button class="card-btn"><i class="fas fa-ellipsis-v"></i></button>
-          </div>
-        </div>
-        <div class="chart-container" id="fleet-chart"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Recent Activity</h2>
-          <div class="card-actions">
-            <button class="card-btn"><i class="fas fa-ellipsis-v"></i></button>
-          </div>
-        </div>
-        <div class="recent-activity">
-          <div class="activity-item">
-            <div class="activity-icon booking">
-              <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">New booking for Toyota Fortuner</div>
-              <div class="activity-time">Just now</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-icon inquiry">
-              <i class="fas fa-comment-dots"></i>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">New inquiry from Rahul Singh</div>
-              <div class="activity-time">2 hours ago</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-icon system">
-              <i class="fas fa-cog"></i>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">System maintenance completed</div>
-              <div class="activity-time">5 hours ago</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-icon booking">
-              <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">Booking completed for Hyundai Creta</div>
-              <div class="activity-time">Yesterday</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  -->
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
-</body>
-</html>
+    // Setup alert close buttons
+    document.querySelectorAll('.close-alert').forEach(button => {
+      button.addEventListener('click', function() {
+        this.parentElement.style.display = 'none';
+      });
+    });
+  });
+</script>
+{% endblock %}

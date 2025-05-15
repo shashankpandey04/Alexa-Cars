@@ -1,0 +1,535 @@
+{% extends "admin_base.html" %}
+
+{% block title %}AlexaCars - Admin Dashboard{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.css">
+{% endblock %}
+
+{% block content %}
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">Inquiry Details</h1>
+        <p class="page-subtitle">Inquiry #{{ inquiry._id }}</p>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/inquiries" class="btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Inquiries
+        </a>
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="inquiry-details-container">
+      <div class="row">
+        <!-- Inquiry Details Card -->
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Inquiry Information</h2>
+              <div class="inquiry-status">
+                <span class="badge badge-{{ 
+                  'primary' if inquiry.status == 'pending' else 
+                  'success' if inquiry.status == 'approved' else 
+                  'danger' if inquiry.status == 'rejected' else 
+                  'secondary' if inquiry.status == 'cancelled' else 
+                  'warning' 
+                }}">
+                  {{ inquiry.status|capitalize }}
+                </span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="inquiry-section">
+                <h3 class="section-title">Vehicle Details</h3>
+                <div class="detail-row">
+                  <div class="detail-label">Vehicle Name</div>
+                  <div class="detail-value">{{ inquiry.car_name }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Price Per Day</div>
+                  <div class="detail-value">₹{{ inquiry.price_per_day }}</div>
+                </div>
+              </div>
+              
+              <div class="inquiry-section">
+                <h3 class="section-title">Rental Information</h3>
+                <div class="detail-row">
+                  <div class="detail-label">Rental Period</div>
+                  <div class="detail-value">{{ inquiry.start_date }} to {{ inquiry.end_date }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Number of Days</div>
+                  <div class="detail-value">{{ inquiry.days }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Pick-up Location</div>
+                  <div class="detail-value">{{ inquiry.pickup_location }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Return Location</div>
+                  <div class="detail-value">{{ inquiry.return_location }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Total Price</div>
+                  <div class="detail-value">₹{{ inquiry.total_price }}</div>
+                </div>
+              </div>
+              
+              {% if inquiry.message %}
+              <div class="inquiry-section">
+                <h3 class="section-title">Customer Message</h3>
+                <div class="message-box">
+                  {{ inquiry.message }}
+                </div>
+              </div>
+              {% endif %}
+              
+              <!-- Update Status Form -->
+              <div class="inquiry-section">
+                <h3 class="section-title">Update Status</h3>
+                <form action="/admin/inquiries/update/{{ inquiry._id }}" method="POST" class="status-form">
+                  <div class="status-options">
+                    <div class="status-option">
+                      <input type="radio" id="pending" name="status" value="pending" {% if inquiry.status == 'pending' %}checked{% endif %}>
+                      <label for="pending" class="status-label pending">
+                        <i class="fas fa-clock"></i> Pending
+                      </label>
+                    </div>
+                    <div class="status-option">
+                      <input type="radio" id="approved" name="status" value="approved" {% if inquiry.status == 'approved' %}checked{% endif %} {% if inquiry.status == 'approved' or inquiry.booking_id %}disabled{% endif %}>
+                      <label for="approved" class="status-label approved {% if inquiry.status == 'approved' or inquiry.booking_id %}disabled{% endif %}">
+                        <i class="fas fa-check"></i> Approve
+                        {% if inquiry.booking_id %}
+                        <small>(Booking already created)</small>
+                        {% endif %}
+                      </label>
+                    </div>
+                    <div class="status-option">
+                      <input type="radio" id="rejected" name="status" value="rejected" {% if inquiry.status == 'rejected' %}checked{% endif %}>
+                      <label for="rejected" class="status-label rejected">
+                        <i class="fas fa-times"></i> Reject
+                      </label>
+                    </div>
+                    <div class="status-option">
+                      <input type="radio" id="cancelled" name="status" value="cancelled" {% if inquiry.status == 'cancelled' %}checked{% endif %}>
+                      <label for="cancelled" class="status-label cancelled">
+                        <i class="fas fa-ban"></i> Cancelled
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {% if inquiry.booking_id %}
+                  <div class="booking-link-section">
+                    <p>This inquiry has been converted to a booking.</p>
+                    <a href="/admin/bookings/view/{{ inquiry.booking_id }}" class="btn-primary">
+                      <i class="fas fa-eye"></i> View Booking
+                    </a>
+                  </div>
+                  {% else %}
+                  <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                      <i class="fas fa-save"></i> Update Status
+                    </button>
+                  </div>
+                  {% endif %}
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Customer Information Card -->
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Customer Information</h2>
+            </div>
+            <div class="card-body">
+              <div class="customer-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="customer-name">{{ inquiry.user_name if inquiry.user_name else "User #" + inquiry.user_id }}</div>
+              <div class="customer-info">
+                <div class="info-item">
+                  <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                  <div class="info-text">{{ user_data.email if user_data.email else "Email not available" }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-icon"><i class="fas fa-phone"></i></div>
+                  <div class="info-text">{{ user_data.phone if user_data.phone else "Phone not available" }}</div>
+                </div>
+              </div>
+              
+              <div class="inquiry-meta">
+                <div class="meta-item">
+                  <div class="meta-label">Inquiry Date</div>
+                  <div class="meta-value">{{ inquiry.created_at.strftime('%d %b %Y') if inquiry.created_at else "N/A" }}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Last Updated</div>
+                  <div class="meta-value">{{ inquiry.updated_at.strftime('%d %b %Y') if inquiry.updated_at else "N/A" }}</div>
+                </div>
+              </div>
+              
+              <div class="action-buttons">
+                <a href="mailto:{{ user_data.email }}" class="btn-primary full-width">
+                  <i class="fas fa-envelope"></i> Email Customer
+                </a>
+                <a href="tel:{{ user_data.phone }}" class="btn-secondary full-width">
+                  <i class="fas fa-phone"></i> Call Customer
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card mt-4">
+            <div class="card-header">
+              <h2 class="card-title">Vehicle Preview</h2>
+            </div>
+            <div class="card-body">
+              <div class="car-preview">
+                <img src="/static/images/default_car.jpg" alt="{{ inquiry.car_name }}" class="car-preview-image">
+                <div class="car-preview-name">{{ inquiry.car_name }}</div>
+              </div>
+              <a href="/admin/cars/view/{{ inquiry.car_id }}" class="btn-secondary full-width">
+                <i class="fas fa-car"></i> View Vehicle
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <script>
+    // Alert close functionality
+    const closeButtons = document.querySelectorAll('.close-alert');
+    closeButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        this.parentElement.style.display = 'none';
+      });
+    });
+  </script>
+  
+  <style>
+    /* Inquiry Details Page Styles */
+    .inquiry-details-container {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 -15px;
+    }
+    
+    .col-lg-8 {
+      width: 66.66%;
+      padding: 0 15px;
+      flex: 0 0 66.66%;
+    }
+    
+    .col-lg-4 {
+      width: 33.33%;
+      padding: 0 15px;
+      flex: 0 0 33.33%;
+    }
+    
+    @media (max-width: 992px) {
+      .col-lg-8, .col-lg-4 {
+        width: 100%;
+        flex: 0 0 100%;
+      }
+      
+      .col-lg-4 {
+        margin-top: 1.5rem;
+      }
+    }
+    
+    .inquiry-section {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .inquiry-section:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 1.25rem;
+      position: relative;
+      padding-bottom: 0.5rem;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 2rem;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      border-radius: 2px;
+    }
+    
+    .detail-row {
+      display: flex;
+      margin-bottom: 0.75rem;
+      align-items: flex-start;
+    }
+    
+    .detail-label {
+      width: 150px;
+      min-width: 150px;
+      font-weight: 500;
+      color: var(--gray-600);
+    }
+    
+    .detail-value {
+      flex: 1;
+      color: var(--gray-800);
+      font-weight: 500;
+    }
+    
+    .message-box {
+      padding: 1.5rem;
+      background: var(--gray-100);
+      border-radius: var(--border-radius);
+      color: var(--gray-800);
+    }
+    
+    .status-form {
+      margin-top: 1rem;
+    }
+    
+    .status-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .status-option {
+      flex: 1;
+      min-width: calc(50% - 0.5rem);
+    }
+    
+    .status-option input[type="radio"] {
+      display: none;
+    }
+    
+    .status-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+      background: var(--gray-100);
+      color: var(--gray-700);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    
+    .status-label:hover {
+      background: var(--gray-200);
+    }
+    
+    .status-label.pending {
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--primary-color);
+    }
+    
+    .status-label.approved {
+      background: rgba(67, 170, 139, 0.1);
+      color: #43aa8b;
+    }
+    
+    .status-label.rejected {
+      background: rgba(230, 57, 70, 0.1);
+      color: var(--danger-color);
+    }
+    
+    .status-label.cancelled {
+      background: rgba(108, 117, 125, 0.1);
+      color: var(--gray-600);
+    }
+    
+    .status-label.completed {
+      background: rgba(247, 37, 133, 0.1);
+      color: var(--warning-color);
+    }
+    
+    .status-label.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .status-option input[type="radio"]:checked + .status-label {
+      border-color: currentColor;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Customer Information */
+    .customer-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1rem;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.2);
+    }
+    
+    .customer-name {
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 1.5rem;
+    }
+    
+    .customer-info {
+      margin-bottom: 1.5rem;
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      color: var(--gray-700);
+    }
+    
+    .info-text {
+      flex: 1;
+      color: var(--gray-700);
+    }
+    
+    .inquiry-meta {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: var(--gray-100);
+      border-radius: var(--border-radius);
+    }
+    
+    .meta-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .meta-label {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+    }
+    
+    .meta-value {
+      font-weight: 500;
+      color: var(--gray-800);
+    }
+    
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .full-width {
+      width: 100%;
+      text-align: center;
+      justify-content: center;
+    }
+    
+    /* Car Preview */
+    .car-preview {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    
+    .car-preview-image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: var(--border-radius);
+      margin-bottom: 0.75rem;
+    }
+    
+    .car-preview-name {
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 1rem;
+    }
+    
+    .mt-4 {
+      margin-top: 1.5rem;
+    }
+    
+    .booking-link-section {
+      background: #e8f8f2;
+      border: 1px solid #c0f0df;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    
+    .booking-link-section p {
+      margin-bottom: 10px;
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Inquiry status */
+    .inquiry-status {
+      display: flex;
+      align-items: center;
+    }
+    
+    .inquiry-status .badge {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.75rem;
+    }
+  </style>
+
+{% endblock %}

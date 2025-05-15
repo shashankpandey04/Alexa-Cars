@@ -1,531 +1,187 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <title>AlexaCars - India / Cars</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends "base.html" %}
+{% block content %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/car-showcase.css') }}">
     
-    <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="css/open-iconic-bootstrap.min.css">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/open-iconic-bootstrap.min.css')}}">
-    <link rel="stylesheet" href="css/animate.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/animate.css')}}">
-    
-    <link rel="stylesheet" href="css/owl.carousel.min.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/owl.theme.default.min.css')}}">
-    <link rel="stylesheet" href="css/owl.theme.default.min.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/owl.theme.default.min.css')}}">
-    <link rel="stylesheet" href="css/magnific-popup.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/magnific-popup.css')}}">
-
-    <link rel="stylesheet" href="css/aos.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/aos.css')}}">
-
-    <link rel="stylesheet" href="css/ionicons.min.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/ionicons.min.css')}}">
-
-    <link rel="stylesheet" href="css/bootstrap-datepicker.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap-datepicker.css')}}">
-    <link rel="stylesheet" href="css/jquery.timepicker.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/jquery.timepicker.css')}}">
-
-    
-    <link rel="stylesheet" href="css/flaticon.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/flaticon.css')}}">
-    <link rel="stylesheet" href="css/icomoon.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/icomoon.css')}}">
-    <link rel="stylesheet" href="css/style.css">
-	<link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
-  </head>
-  <body>
-    
-	  <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-	    <div class="container">
-	      <a class="navbar-brand" href="index.html">Alexa<span>Cars</span></a>
-	      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-	        <span class="oi oi-menu"></span> Menu
-	      </button>
-
-	      <div class="collapse navbar-collapse" id="ftco-nav">
-	        <ul class="navbar-nav ml-auto">
-	          <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
-	          <li class="nav-item"><a href="about.html" class="nav-link">About</a></li>
-	          <!-- <li class="nav-item"><a href="services.html" class="nav-link">Services</a></li>
-	          <li class="nav-item"><a href="pricing.html" class="nav-link">Pricing</a></li> -->
-	          <li class="nav-item active"><a href="car.html" class="nav-link">Cars</a></li>
-	          <!-- <li class="nav-item"><a href="blog.html" class="nav-link">Blog</a></li> -->
-	          <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
-			  <li class="nav-item"><a href="tel:9660597171" class="nav-link">+91 9660597171</a></li>
-              <li class="nav-item"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="nav-link"><i class="icon-whatsapp"></i> WhatsApp</a></li>
-
-	        </ul>
-	      </div>
-	    </div>
-	  </nav>
-    <!-- END nav -->
-    
-    <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('images/ap/ccarshome.jpg');" data-stellar-background-ratio="0.5">
+    <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('/static/images/ap/ccarshome.jpg');" data-stellar-background-ratio="0.5">
       <div class="overlay"></div>
       <div class="container">
         <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-start">
           <div class="col-md-9 ftco-animate pb-5">
-          	<p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home <i class="ion-ios-arrow-forward"></i></a></span> <span>Cars <i class="ion-ios-arrow-forward"></i></span></p>
+          	<p class="breadcrumbs"><span class="mr-2"><a href="{{ url_for('index') }}">Home <i class="fa-solid fa-arrow-right"></i></a></span> <span>Cars <i class="fa-solid fa-arrow-right"></i></span></p>
             <h1 class="mb-3 bread">Choose Your Car</h1>
           </div>
         </div>
       </div>
     </section>
 		
-
-		<section class="ftco-section bg-light">
+    <section class="ftco-section bg-light">
     	<div class="container">
+    		<!-- Car filters -->
+    		<div class="car-filters text-center mb-5">
+    			<button class="filter-btn active" data-category="all">All Cars</button>
+    			<button class="filter-btn" data-category="Sedan">Sedan</button>
+    			<button class="filter-btn" data-category="SUV">SUV</button>
+    			<button class="filter-btn" data-category="Hatchback">Hatchback</button>
+                <button class="filter-btn" data-category="Luxury">Luxury</button>
+    		</div>
+    		
     		<div class="row">
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/grand-i10-500x270-c-1.webp);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="#">Hyundai i10 Nios CNG</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">sedan</span>
-	    						<p class="price ml-auto">₹2200 <span>/day</span></p>
-    						</div>
-							<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-							<br>
-
-
-    					</div>
-    				</div>
+    		    {% if cars|length > 0 %}
+    		        {% for car in cars %}
+                    <div class="col-md-4 car-item" data-category="{{ car.category }}">
+    				    <div class="car-wrap rounded ftco-animate">
+    					    <div class="img rounded d-flex align-items-end" style="background-image: url('{{ car.image }}');">
+    					        {% if car.booked %}
+    					        <div class="price-ribbon">Reserved</div>
+    					        {% endif %}
+    					    </div>
+    					    <div class="text">
+    						    <h2 class="mb-0"><a href="#">{{ car.name }}</a></h2>
+    						    <div class="d-flex mb-3">
+	    						    <span class="cat">{{ car.category }}</span>
+	    						    <p class="price ml-auto">₹{{ car.price_per_day }} <span>/day</span></p>
+    						    </div>
+                                <div class="d-flex car-specs mb-3">
+                                    <span class="spec"><i class="fa-solid fa-calendar-alt"></i> {{ car.year }}</span>
+                                    <span class="spec"><i class="fa-solid fa-gas-pump"></i> {{ car.fuel_type }}</span>
+                                    {% if car.status != 'Booked' %}
+                                    <span class="spec available"><i class="fa-solid fa-check"></i> Available</span>
+                                    {% else %}
+                                    <span class="spec booked"><i class="fa-solid fa-times"></i> Booked</span>
+                                    {% endif %}
+                                </div>
+    						    <p class="d-flex mb-0 d-block">
+                                    {% if car.status != 'Booked' %}
+                                    <a href="{{ url_for('inquiry_form') }}?car={{ car._id }}" class="btn btn-primary py-2 mr-1">Book now </a>
+                                    {% else %}
+                                    <a href="{{ url_for('inquiry_form') }}" class="btn btn-secondary py-2 mr-1">Check Availability</a>
+                                    {% endif %}
+                                    <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a>
+                                </p>
+    					    </div>
+    				    </div>
+    			    </div>
+    			    {% endfor %}
+    		    {% else %}
+    			<div class="col-12 text-center py-5">
+    				<div class="no-cars">
+                      <div class="icon"><i class="fa-solid fa-car"></i></div>
+                      <h3>Our fleet is being updated</h3>
+                      <p>We're adding new vehicles to our inventory. Please check back soon or contact us for more information.</p>
+                    </div>
     			</div>
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/toyotaglanza.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Toyota Glanza</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">Sedan</span>
-	    						<p class="price ml-auto">₹2500 <span>/day</span></p>
-    						</div>
-							<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-							<br>
-
-
-    					</div>
-    				</div>
-    			</div>
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Maruti-Suzuki-Swift-White-500x270-c-1.jpg);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Maruti Suzuki Swift</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">Hatch back</span>
-	    						<p class="price ml-auto">₹2500 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/maruti-brezza-white-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Maruti Suzuki Breeza VXI</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">hatch back</span>
-	    						<p class="price ml-auto">₹2600 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Baleno2024new.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Baleno 2024 (New)</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹2800 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/hyundai-i20-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Hyundai – i20 (NEW)</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹2800 <span>/day</span></p>
-    						</div>
-							<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-							<br>
-
-
-    					</div>
-    				</div>
-    			</div>
-
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Hyundai-Creta-sunroof-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Hyundai Creta</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹4200 <span>/day</span></p>
-    						</div>
-							<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-							<br>
-
-
-    					</div>
-    				</div>
-    			</div>
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Honda-Amaze-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Honda Amaze</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">Sedan</span>
-	    						<p class="price ml-auto">₹2600 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/swiftdzire2024.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Swift Dzire 2024</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">Hatch Back</span>
-	    						<p class="price ml-auto">₹2600 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/hyundai-verna-top-model-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Hyundai Verna Top Model</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">Sedan</span>
-	    						<p class="price ml-auto">₹3500 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/swiftdzire2024.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Swift Dzire 2024 (Automatic)</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">Subaru</span>
-	    						<p class="price ml-auto">₹2700 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-    			<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Hyundai-Aura-Atlas-White-500x270-c-1.jpg);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Hyundai Aura CNG (New)</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">Sedan</span>
-	    						<p class="price ml-auto">₹2600 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-				<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/maruti-brezza-white-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Maruti Suzuki Brezza VXI (New)</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹3500 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-				<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/brezza-sunroof-1-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Maruti Suzuki Brezza With Sunroof</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹3700 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-				<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/creta2024.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Hyundai Creta New (2024)</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹4000 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-				<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/maruti-ertiga-vxi-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Maruti Suzuki Ertiga</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹4000 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-				
-				<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/thar--500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Mahindra Thar (New)</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">Subaru</span>
-	    						<p class="price ml-auto">₹5500 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-
-				<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Mahindra-Scorpio-500x270-c-1.webp);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Mahindra Scorpio S11</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹6000 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-
-    					</div>
-    				</div>
-    			</div>
-
-				<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Mahindra-Scorpio-N-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Mahindra Scorpio N (2024)</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹7500 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-    					</div>
-    				</div>
-    			</div>
-
-				<div class="col-md-4">
-    				<div class="car-wrap rounded ftco-animate">
-    					<div class="img rounded d-flex align-items-end" style="background-image: url(images/ap/Toyota-Fortuner-500x270-c-1.png);">
-    					</div>
-    					<div class="text">
-    						<h2 class="mb-0"><a href="car-single.html">Toyota Fortuner 2024</a></h2>
-    						<div class="d-flex mb-3">
-	    						<span class="cat">SUV</span>
-	    						<p class="price ml-auto">₹13500 <span>/day</span></p>
-    						</div>
-    						<p class="d-flex mb-0 d-block"><a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary py-2 mr-1">Book now </a> <a href="tel:9660597171" class="btn btn-secondary py-2 ml-1">Call</a></p>
-                    <br>
-
-    					</div>
-    				</div>
-    			</div>
-
-
-
-
-    		<!-- </div>
-    		<div class="row mt-5">
-          <div class="col text-center">
-            <div class="block-27">
-              <ul>
-                <li><a href="#">&lt;</a></li>
-                <li class="active"><span>1</span></li>
-                <li><a href="#">2</a></li>
-                <li><a href="#">3</a></li>
-                <li><a href="#">4</a></li>
-                <li><a href="#">5</a></li>
-                <li><a href="#">&gt;</a></li>
-              </ul>
-            </div>
-          </div>
-        </div> -->
+    		    {% endif %}
+    		</div>
     	</div>
     </section>
-    
 
-    <footer class="ftco-footer ftco-bg-dark ftco-section">
-		<div class="container">
-		  <div class="row mb-5">
-			<div class="col-md">
-			  <div class="ftco-footer-widget mb-4">
-				<h2 class="ftco-heading-2"><a href="#" class="logo">Alexa<span>cars</span></a></h2>
-				<p>Enjoy the best of Jaipur with our unbeatable prices and 24/7 support. Alexa Cars takes the hassle out of car rentals, so you can focus on the journey.</p>
-				<ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
-				  <li class="ftco-animate"><a href="tel:9660597171"><span class="icon-phone"></span></a></li>
-				  <li class="ftco-animate"><a href="https://wa.me/message/IEH42U5P2TSIM1"><span class="icon-whatsapp"></span></a></li>
-				  <li class="ftco-animate"><a href="https://wa.me/message/IEH42U5P2TSIM1"><span class="icon-instagram"></span></a></li>
-				</ul>
-			  </div>
-			</div>
-			<div class="col-md">
-			  <div class="ftco-footer-widget mb-4 ml-md-5">
-				<h2 class="ftco-heading-2">Information</h2>
-				<ul class="list-unstyled">
-				  <li><a href="about.html" class="py-2 d-block">About</a></li>
-				  <li><a href="car.html" class="py-2 d-block">Choose Car</a></li>
-				  <li><a href="Docs/terms.pdf" class="py-2 d-block">Term and Conditions</a></li>
-				  <li><a href="Docs/privacypolicy.pdf" class="py-2 d-block">Privacy Policy</a></li>
-				</ul>
-			  </div>
-			</div>
-			<div class="col-md">
-			   <div class="ftco-footer-widget mb-4">
-				<h2 class="ftco-heading-2">Customer Support</h2>
-				<ul class="list-unstyled">
-				  <li class="py-2 d-block">Payment Option - Cash & UPI</li>
-				  <li><a href="contact.html" class="py-2 d-block">Contact Us</a></li>
-				</ul>
-			  </div>
-			</div>
-			<div class="col-md">
-			  <div class="ftco-footer-widget mb-4">
-				  <h2 class="ftco-heading-2">Have a Questions?</h2>
-				  <div class="block-23 mb-3">
-					<ul>
-					  <li><span class="icon icon-map-marker"></span><span class="text">Gate no 3, Railway metro station, Gopalbari, Jaipur, Rajasthan 302006</span></li>
-					  <li><a href="tel:9660597171"><span class="icon icon-phone"></span><span class="text">+91 9660597171</span></a></li>
-					  <li><a href="#"><span class="icon icon-envelope"></span><span class="text">info@alexacars.in</span></a></li>
-					</ul>
-				  </div>
-			  </div>
-			</div>
-		  </div>
-		  <div class="row">
-		   
-		  </div>
-		</div>
-	  </footer>
-	  
-	
-  
-	<!-- loader -->
-	<div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
-  
-  
-	<script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/jquery-migrate-3.0.1.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/popper.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/jquery.easing.1.3.js')}}"></script>
-	<script src="{{url_for('static', filename='js/jquery.waypoints.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/jquery.stellar.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/owl.carousel.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/jquery.magnific-popup.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/aos.js')}}"></script>
-	<script src="{{url_for('static', filename='js/jquery.animateNumber.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/bootstrap-datepicker.js')}}"></script>
-	<script src="{{url_for('static', filename='js/jquery.timepicker.min.js')}}"></script>
-	<script src="{{url_for('static', filename='js/scrollax.min.js')}}"></script>
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
-	<script src="{{url_for('static', filename='js/google-map.js')}}"></script>
-	<script src="{{url_for('static', filename='js/main.js')}}"></script>
-  
-	</body>
-  </html>
+    <section class="ftco-section ftco-intro" style="background-image: url('/static/images/ap/home.avif');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row justify-content-end">
+                <div class="col-md-6 heading-section heading-section-white ftco-animate">
+                    <h2 class="mb-3">Grab your cars for exploring Jaipur with Alexa Cars</h2>
+                    <a href="https://wa.me/message/IEH42U5P2TSIM1" class="btn btn-primary btn-lg">Book a Car</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .price-ribbon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f72585;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .car-specs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .spec {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #666;
+        }
+        
+        .spec.available {
+            color: #01d28e;
+        }
+        
+        .spec.booked {
+            color: #f72585;
+        }
+        
+        .filter-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #666;
+            padding: 8px 16px;
+            margin: 0 5px 10px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: #01d28e;
+            color: white;
+            border-color: #01d28e;
+        }
+        
+        .car-item {
+            transition: all 0.4s ease;
+        }
+        
+        .car-item.hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                margin: 0 3px 8px;
+            }
+        }
+    </style>
+
+    <script>
+        // Car filtering functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const carItems = document.querySelectorAll('.car-item');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const category = this.getAttribute('data-category');
+                    
+                    carItems.forEach(car => {
+                        if (category === 'all' || car.getAttribute('data-category') === category) {
+                            car.classList.remove('hidden');
+                        } else {
+                            car.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %}

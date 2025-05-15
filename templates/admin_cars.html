@@ -1,81 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>AlexaCars - Manage Cars</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='admin_cars.css') }}">
-</head>
-<body>
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <a href="/" class="brand">
-        <span class="brand-logo">Alexa<span class="brand-name">Cars</span></span>
-      </a>
-    </div>
-    
-    <div class="user-profile">
-      <div class="user-avatar">
-        {{ user.first_name[0] }}
-      </div>
-      <div class="user-info">
-        <div class="user-name">{{ user.first_name }}</div>
-        <div class="user-role">Administrator</div>
-      </div>
-    </div>
-    
-    <ul class="sidebar-menu">
-        <li class="sidebar-item">
-            <a href="/" class="sidebar-link">
-            <span class="sidebar-icon"><i class="fas fa-home"></i></span>
-            Home
-            </a>
-        </li>
-      <li class="sidebar-item">
-        <a href="/dashboard" class="sidebar-link">
-          <span class="sidebar-icon"><i class="fas fa-tachometer-alt"></i></span>
-          Dashboard
-        </a>
-      </li>
-      <li class="sidebar-item">
-        <a href="/admin/cars" class="sidebar-link active">
-          <span class="sidebar-icon"><i class="fas fa-car"></i></span>
-          Manage Cars
-        </a>
-      </li>
-      <li class="sidebar-item">
-        <a href="/admin/bookings" class="sidebar-link">
-          <span class="sidebar-icon"><i class="fas fa-calendar-check"></i></span>
-          Bookings
-        </a>
-      </li>
-      <li class="sidebar-item">
-        <a href="/admin/inquiries" class="sidebar-link">
-          <span class="sidebar-icon"><i class="fas fa-comment-dots"></i></span>
-          Inquiries
-        </a>
-      </li>
-      <li class="sidebar-item">
-        <a href="/admin/users" class="sidebar-link">
-          <span class="sidebar-icon"><i class="fas fa-users"></i></span>
-          Users
-        </a>
-      </li>
-    </ul>
-    
-    <div class="sidebar-footer">
-      <a href="/logout" class="logout-btn">
-        <span class="logout-icon"><i class="fas fa-sign-out-alt"></i></span>
-        Logout
-      </a>
-    </div>
-  </aside>
+{% extends "admin_base.html" %}
 
+{% block title %}AlexaCars - Admin Dashboard{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.css">
+{% endblock %}
+
+{% block content %}
   <!-- Main Content -->
   <main class="main-content">
     <header class="header">
@@ -492,5 +423,4 @@
       }
     }
   </style>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,330 @@
+/* Mobile Responsive Enhancements for Admin Dashboard */
+
+/* Mobile Nav Toggle */
+.nav-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  width: 45px;
+  height: 45px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  z-index: 1005;
+  border: none;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.nav-toggle:hover {
+  background: var(--secondary-color);
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Table enhancements for mobile */
+.table-scroll-hint {
+  display: none;
+  text-align: center;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--gray-600);
+  font-size: 0.85rem;
+  animation: pulseOpacity 2s infinite;
+}
+
+@keyframes pulseOpacity {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* Responsive Cards */
+@media (max-width: 992px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .dashboard-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0;
+    --header-height: 60px;
+  }
+  
+  body {
+    font-size: 0.9rem;
+  }
+  
+  /* Show mobile nav toggle */
+  .nav-toggle {
+    display: flex;
+  }
+  
+  /* Sidebar collapses off-screen on mobile */
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: 1010;
+    width: 80%;
+    max-width: 300px;
+    box-shadow: var(--shadow-xl);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay.open {
+    display: block;
+  }
+  
+  /* Main content takes full width */
+  .main-content {
+    margin-left: 0;
+    padding: 1.5rem 1rem;
+  }
+  
+  /* Header adjustments */
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 2rem;
+  }
+  
+  .header-actions {
+    margin-top: 1rem;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  /* Button adjustments */
+  .header-actions .btn-primary,
+  .header-actions .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Card header adjustments */
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .card-actions {
+    margin-top: 1rem;
+    width: 100%;
+  }
+  
+  /* Table container for horizontal scrolling */
+  .table-scroll-hint {
+    display: block;
+  }
+  
+  .table-container {
+    margin: 0 -1rem;
+    width: calc(100% + 2rem);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Form adjustments */
+  .form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Search and filter adjustments */
+  .search-container {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 0.75rem;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+  
+  .search-input:focus {
+    width: 100%;
+  }
+  
+  .filter-container {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .filter-select {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  /* Modal adjustments */
+  .modal-dialog {
+    margin: 5% auto;
+    width: 95%;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Further adjustments for very small screens */
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .page-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .card {
+    padding: 1.25rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  /* Make buttons more touch-friendly */
+  .action-btn, 
+  .btn-primary, 
+  .btn-secondary {
+    min-height: 44px;
+  }
+  
+  /* Smaller badges */
+  .badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  /* User profile adjustments for smaller screens */
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+    
+  .user-avatar.large {
+    margin: 0 auto;
+  }
+    
+  .profile-actions {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 1.5rem;
+  }
+    
+  .profile-actions .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) {
+  .action-btn, 
+  .card-btn, 
+  .btn-primary, 
+  .btn-secondary,
+  .view-all {
+    min-height: 44px;
+  }
+  
+  .form-control {
+    height: 44px;
+  }
+  
+  /* Increase touch targets */
+  .close-alert,
+  .close-modal {
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Lock body when sidebar is open */
+body.sidebar-open {
+  overflow: hidden;
+}
+
+
+/*For Desktop*/
+@media screen and (min-width: 992px) {
+  .nav-toggle {
+    display: none;
+  }
+  
+  .sidebar {
+    transform: translateX(0);
+    z-index: 1010;
+    width: var(--sidebar-width);
+    box-shadow: var(--shadow-xl);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar-overlay {
+    display: none;
+  }
+  
+  .main-content {
+    margin-left: var(--sidebar-width);
+    padding: 1.5rem;
+  }
+  
+  .header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .header-actions {
+    margin-top: 0;
+    align-self: stretch;
+    display: flex;
+    gap: 1rem;
+  }
+    
+}

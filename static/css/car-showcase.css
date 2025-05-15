@@ -461,19 +461,29 @@
 }
 
 .view-all {
-  display: inline-block;
+  /* Improved display and sizing */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 16px 36px;
+  
+  /* Typography improvements */
   font-size: 16px;
-  font-weight: 600;
-  background: var(--primary-gradient);
+  font-weight: 700;
+  letter-spacing: 0.5px;
   color: white;
-  border-radius: 50px;
   text-decoration: none;
-  transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-  box-shadow: 0 10px 25px rgba(67, 97, 238, 0.25);
+  
+  /* Increased contrast and visual definition */
+  background: var(--primary-gradient);
+  border-radius: 50px;
+  box-shadow: 0 10px 25px rgba(67, 97, 238, 0.3);
+  
+  /* Position and animation properties */
   position: relative;
   overflow: hidden;
-  letter-spacing: 0.5px;
+  z-index: 1;
+  transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .view-all:hover {

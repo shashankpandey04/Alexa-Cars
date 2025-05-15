@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>AlexaCars - Edit User</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_cars.css') }}">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="brand">
+        <span class="brand-logo">Alexa<span class="brand-name">Cars</span></span>
+      </a>
+    </div>
+    
+    <div class="user-profile">
+      <div class="user-avatar">
+        {{ user.first_name[0] }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ user.first_name }}</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+    
+    <ul class="sidebar-menu">
+        <li class="sidebar-item">
+            <a href="/" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+            Home
+            </a>
+        </li>
+      <li class="sidebar-item">
+        <a href="/dashboard" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-tachometer-alt"></i></span>
+          Dashboard
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/cars" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-car"></i></span>
+          Manage Cars
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/bookings" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-calendar-check"></i></span>
+          Bookings
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/inquiries" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-comment-dots"></i></span>
+          Inquiries
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/users" class="sidebar-link active">
+          <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+          Users
+        </a>
+      </li>
+    </ul>
+    
+    <div class="sidebar-footer">
+      <a href="/logout" class="logout-btn">
+        <span class="logout-icon"><i class="fas fa-sign-out-alt"></i></span>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">Edit User</h1>
+        <p class="page-subtitle">Editing {{ viewed_user.first_name }} {{ viewed_user.last_name }}</p>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/users" class="btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Users
+        </a>
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Edit User Form -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">User Information</h2>
+      </div>
+      <div class="card-body">
+        <form action="/admin/users/edit/{{ viewed_user._id }}" method="POST" class="edit-user-form">
+          <div class="form-grid">
+            <!-- Personal Information Section -->
+            <div class="form-section">
+              <h3 class="section-title">Personal Information</h3>
+              
+              <div class="form-group">
+                <label for="first_name">First Name*</label>
+                <input type="text" id="first_name" name="first_name" class="form-control" value="{{ viewed_user.first_name }}" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="last_name">Last Name*</label>
+                <input type="text" id="last_name" name="last_name" class="form-control" value="{{ viewed_user.last_name }}" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="email">Email Address*</label>
+                <input type="email" id="email" name="email" class="form-control" value="{{ viewed_user.email }}" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="phone">Phone Number*</label>
+                <input type="tel" id="phone" name="phone" class="form-control" value="{{ viewed_user.phone }}" required>
+              </div>
+            </div>
+            
+            <!-- Account Settings Section -->
+            <div class="form-section">
+              <h3 class="section-title">Account Settings</h3>
+              
+              <div class="form-group">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" class="form-control">
+                <div class="field-description">Leave blank to keep current password</div>
+              </div>
+              
+              <div class="form-group">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control">
+                <div id="password-match-error" class="error-message" style="display: none; color: red; margin-top: 5px;">
+                  Passwords do not match
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="admin_status" name="admin_status" {% if viewed_user.get('admin', False) %}checked{% endif %}>
+                  <label class="custom-control-label" for="admin_status">Administrator Access</label>
+                  <div class="field-description">Grant this user administrative privileges</div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="active_status" name="active_status" {% if viewed_user.get('active', True) %}checked{% endif %}>
+                  <label class="custom-control-label" for="active_status">Account Active</label>
+                  <div class="field-description">Enable or disable this account</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Account Info -->
+          <div class="account-info">
+            <div class="info-item">
+              <span class="info-label">Account Created:</span>
+              <span class="info-value">{{ viewed_user.get('created_at', 'N/A') }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Last Updated:</span>
+              <span class="info-value">{{ viewed_user.get('updated_at', 'N/A') }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Last Login:</span>
+              <span class="info-value">{{ viewed_user.get('last_login', 'Never') }}</span>
+            </div>
+          </div>
+          
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <a href="/admin/users/view/{{ viewed_user._id }}" class="btn-secondary">
+              <i class="fas fa-eye"></i> View User
+            </a>
+            <button type="submit" class="btn-primary" id="submit-btn">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Password matching validation
+    const password = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const passwordError = document.getElementById('password-match-error');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    function validatePasswords() {
+      if (password.value && confirmPassword.value && password.value !== confirmPassword.value) {
+        passwordError.style.display = 'block';
+        confirmPassword.classList.add('error');
+        submitBtn.disabled = true;
+        return false;
+      } else {
+        passwordError.style.display = 'none';
+        confirmPassword.classList.remove('error');
+        submitBtn.disabled = false;
+        return true;
+      }
+    }
+    
+    password.addEventListener('input', validatePasswords);
+    confirmPassword.addEventListener('input', validatePasswords);
+    
+    // Form submission validation
+    document.querySelector('.edit-user-form').addEventListener('submit', function(e) {
+      if (!validatePasswords()) {
+        e.preventDefault();
+        return false;
+      }
+    });
+    
+    // Alert close functionality
+    document.querySelectorAll('.close-alert').forEach(button => {
+      button.addEventListener('click', function() {
+        this.parentElement.style.display = 'none';
+      });
+    });
+  </script>
+
+  <style>
+    .custom-control {
+      position: relative;
+      display: block;
+      min-height: 1.5rem;
+      padding-left: 1.5rem;
+    }
+    
+    .custom-control-input {
+      position: absolute;
+      z-index: -1;
+      opacity: 0;
+    }
+    
+    .custom-control-label {
+      position: relative;
+      margin-bottom: 0;
+      vertical-align: top;
+      cursor: pointer;
+    }
+    
+    .custom-control-label::before {
+      position: absolute;
+      left: -1.5rem;
+      top: 0.25rem;
+      display: block;
+      width: 1rem;
+      height: 1rem;
+      content: "";
+      background-color: #fff;
+      border: 1px solid var(--gray-400);
+      border-radius: 0.25rem;
+    }
+    
+    .custom-switch .custom-control-label::before {
+      left: -2.25rem;
+      width: 1.75rem;
+      border-radius: 0.5rem;
+    }
+    
+    .custom-switch .custom-control-label::after {
+      top: 0.25rem;
+      left: -2.25rem;
+      width: 1rem;
+      height: 1rem;
+      background-color: var(--gray-400);
+      border-radius: 0.5rem;
+      transition: transform 0.15s, background-color 0.15s;
+      content: "";
+      position: absolute;
+    }
+    
+    .custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+      background-color: #fff;
+      transform: translateX(0.75rem);
+    }
+    
+    .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .field-description {
+      margin-top: 0.25rem;
+      font-size: 0.85rem;
+      color: var(--gray-600);
+    }
+    
+    .error {
+      border-color: var(--danger-color) !important;
+      box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15) !important;
+    }
+    
+    .account-info {
+      background-color: var(--gray-100);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .account-info .info-item {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .info-label {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+      font-size: 0.95rem;
+      color: var(--gray-800);
+    }
+  </style>
+</body>
+</html>

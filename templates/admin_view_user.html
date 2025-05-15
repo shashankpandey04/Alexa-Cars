@@ -1,0 +1,553 @@
+{% extends "admin_base.html" %}
+
+{% block title %}AlexaCars - Admin Dashboard{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.css">
+{% endblock %}
+
+{% block content %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">User Profile</h1>
+        <p class="page-subtitle">Viewing {{ viewed_user.first_name }} {{ viewed_user.last_name }}</p>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/users" class="btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Users
+        </a>
+        <a href="/admin/users/edit/{{ viewed_user._id }}" class="btn-primary">
+          <i class="fas fa-edit"></i> Edit User
+        </a>
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- User Profile Card -->
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="user-avatar large">
+          {{ viewed_user.first_name[0] }}
+        </div>
+        <div class="profile-info">
+          <h2 class="profile-name">{{ viewed_user.first_name }} {{ viewed_user.last_name }}</h2>
+          <div class="profile-badges">
+            <span class="badge {% if viewed_user.get('active', True) %}badge-success{% else %}badge-secondary{% endif %}">
+              {{ 'Active' if viewed_user.get('active', True) else 'Inactive' }}
+            </span>
+            <span class="badge {% if viewed_user.get('admin', False) %}badge-warning{% else %}badge-primary{% endif %}">
+              {{ 'Administrator' if viewed_user.get('admin', False) else 'Customer' }}
+            </span>
+          </div>
+        </div>
+        <div class="profile-actions">
+          {% if viewed_user._id|string != user.id %}
+            <button type="button" class="action-btn toggle-admin-btn" 
+                    title="{{ 'Remove admin rights' if viewed_user.get('admin', False) else 'Grant admin rights' }}" 
+                    data-user-id="{{ viewed_user._id }}" 
+                    data-status-type="admin" 
+                    data-current="{{ 'true' if viewed_user.get('admin', False) else 'false' }}">
+              <i class="fas {% if viewed_user.get('admin', False) %}fa-user-minus{% else %}fa-user-shield{% endif %}"></i>
+              {{ 'Remove Admin Access' if viewed_user.get('admin', False) else 'Grant Admin Access' }}
+            </button>
+            <button type="button" class="action-btn {% if viewed_user.get('active', True) %}action-btn-danger{% else %}action-btn-success{% endif %} toggle-active-btn" 
+                    title="{{ 'Deactivate user' if viewed_user.get('active', True) else 'Activate user' }}" 
+                    data-user-id="{{ viewed_user._id }}" 
+                    data-status-type="active" 
+                    data-current="{{ 'true' if viewed_user.get('active', True) else 'false' }}">
+              <i class="fas {% if viewed_user.get('active', True) %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+              {{ 'Deactivate Account' if viewed_user.get('active', True) else 'Activate Account' }}
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      <div class="profile-body">
+        <div class="profile-section">
+          <h3 class="section-title">Contact Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Email</div>
+              <div class="info-value">
+                <i class="fas fa-envelope"></i>
+                <a href="mailto:{{ viewed_user.email }}">{{ viewed_user.email }}</a>
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Phone</div>
+              <div class="info-value">
+                <i class="fas fa-phone"></i>
+                <a href="tel:{{ viewed_user.phone }}">{{ viewed_user.phone }}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-section">
+          <h3 class="section-title">Account Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Account ID</div>
+              <div class="info-value">{{ viewed_user._id }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Created At</div>
+              <div class="info-value">
+                <i class="fas fa-calendar-plus"></i>
+                {{ viewed_user.get('created_at', 'N/A') }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Last Updated</div>
+              <div class="info-value">
+                <i class="fas fa-edit"></i>
+                {{ viewed_user.get('updated_at', 'N/A') }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Last Login</div>
+              <div class="info-value">
+                <i class="fas fa-sign-in-alt"></i>
+                {{ viewed_user.get('last_login', 'Never') }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookings and Inquiries -->
+    <div class="user-activities">
+      <div class="dashboard-row">
+        <!-- Bookings -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Booking History</h2>
+          </div>
+          <div class="card-body">
+            {% if bookings|length > 0 %}
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Vehicle</th>
+                      <th>Dates</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                      <td>{{ booking.car_name }}</td>
+                      <td>{{ booking.start_date }} to {{ booking.end_date }}</td>
+                      <td>₹{{ booking.total_price }}</td>
+                      <td>
+                        <span class="badge 
+                          {% if booking.status == 'active' %}badge-success
+                          {% elif booking.status == 'upcoming' %}badge-primary
+                          {% elif booking.status == 'completed' %}badge-secondary
+                          {% else %}badge-warning{% endif %}">
+                          {{ booking.status|capitalize }}
+                        </span>
+                      </td>
+                      <td>
+                        <a href="/admin/bookings/view/{{ booking._id }}" class="action-btn action-btn-outline">
+                          <i class="fas fa-eye"></i> View
+                        </a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3>No bookings yet</h3>
+                <p>This user hasn't made any bookings yet.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Inquiries -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Inquiry History</h2>
+          </div>
+          <div class="card-body">
+            {% if inquiries|length > 0 %}
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Vehicle</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for inquiry in inquiries %}
+                    <tr>
+                      <td>{{ inquiry.car_name }}</td>
+                      <td>{{ inquiry.created_at.strftime('%Y-%m-%d') if inquiry.created_at is not string else inquiry.created_at }}</td>
+                      <td>
+                        <span class="badge 
+                          {% if inquiry.status == 'pending' %}badge-warning
+                          {% elif inquiry.status == 'approved' %}badge-success
+                          {% elif inquiry.status == 'rejected' %}badge-danger
+                          {% else %}badge-secondary{% endif %}">
+                          {{ inquiry.status|capitalize }}
+                        </span>
+                      </td>
+                      <td>
+                        <a href="/admin/inquiries/view/{{ inquiry._id }}" class="action-btn action-btn-outline">
+                          <i class="fas fa-eye"></i> View
+                        </a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <i class="fas fa-comment-dots"></i>
+                </div>
+                <h3>No inquiries yet</h3>
+                <p>This user hasn't made any inquiries yet.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Toggle admin status
+    document.querySelectorAll('.toggle-admin-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-user-id');
+        const statusType = this.getAttribute('data-status-type');
+        const currentStatus = this.getAttribute('data-current') === 'true';
+        
+        toggleUserStatus(userId, statusType, currentStatus, this);
+      });
+    });
+    
+    // Toggle active status
+    document.querySelectorAll('.toggle-active-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-user-id');
+        const statusType = this.getAttribute('data-status-type');
+        const currentStatus = this.getAttribute('data-current') === 'true';
+        
+        toggleUserStatus(userId, statusType, currentStatus, this);
+      });
+    });
+    
+    // Toggle user status (admin or active)
+    function toggleUserStatus(userId, statusType, currentStatus, button) {
+      fetch(`/admin/users/toggle-status/${userId}/${statusType}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          const alertHTML = `
+            <div class="alert alert-success">
+              <i class="fas fa-check-circle"></i>
+              ${data.message}
+              <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+            </div>
+          `;
+          
+          document.querySelector('.header').insertAdjacentHTML('afterend', alertHTML);
+          
+          // Update UI based on status type
+          if (statusType === 'admin') {
+            const badge = document.querySelector('.profile-badges .badge:nth-child(2)');
+            
+            if (data.new_status) {
+              badge.classList.remove('badge-primary');
+              badge.classList.add('badge-warning');
+              badge.textContent = 'Administrator';
+              
+              button.setAttribute('data-current', 'true');
+              button.setAttribute('title', 'Remove admin rights');
+              button.innerHTML = '<i class="fas fa-user-minus"></i> Remove Admin Access';
+            } else {
+              badge.classList.remove('badge-warning');
+              badge.classList.add('badge-primary');
+              badge.textContent = 'Customer';
+              
+              button.setAttribute('data-current', 'false');
+              button.setAttribute('title', 'Grant admin rights');
+              button.innerHTML = '<i class="fas fa-user-shield"></i> Grant Admin Access';
+            }
+          } else if (statusType === 'active') {
+            const badge = document.querySelector('.profile-badges .badge:nth-child(1)');
+            
+            if (data.new_status) {
+              badge.classList.remove('badge-secondary');
+              badge.classList.add('badge-success');
+              badge.textContent = 'Active';
+              
+              button.setAttribute('data-current', 'true');
+              button.setAttribute('title', 'Deactivate user');
+              button.classList.remove('action-btn-success');
+              button.classList.add('action-btn-danger');
+              button.innerHTML = '<i class="fas fa-user-slash"></i> Deactivate Account';
+            } else {
+              badge.classList.remove('badge-success');
+              badge.classList.add('badge-secondary');
+              badge.textContent = 'Inactive';
+              
+              button.setAttribute('data-current', 'false');
+              button.setAttribute('title', 'Activate user');
+              button.classList.remove('action-btn-danger');
+              button.classList.add('action-btn-success');
+              button.innerHTML = '<i class="fas fa-user-check"></i> Activate Account';
+            }
+          }
+          
+          // Setup close button for the new alert
+          setupAlertCloseButtons();
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while trying to update the user status');
+      });
+    }
+    
+    // Setup alert close buttons
+    function setupAlertCloseButtons() {
+      document.querySelectorAll('.close-alert').forEach(button => {
+        button.addEventListener('click', function() {
+          this.parentElement.style.display = 'none';
+        });
+      });
+    }
+    
+    // Initial setup
+    setupAlertCloseButtons();
+  </script>
+
+  <style>
+    .profile-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    
+    .profile-header {
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: white;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    
+    .user-avatar.large {
+      width: 100px;
+      height: 100px;
+      font-size: 2.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: 3px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    .profile-info {
+      flex: 1;
+    }
+    
+    .profile-name {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .profile-badges {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .profile-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+      .profile-actions {
+        margin-top: 0;
+      }
+    }
+    
+    .profile-body {
+      padding: 2rem;
+    }
+    
+    .profile-section {
+      margin-bottom: 2rem;
+    }
+    
+    .profile-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .info-item {
+      background: var(--gray-100);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    
+    .info-label {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      margin-bottom: 0.5rem;
+    }
+    
+    .info-value {
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .info-value a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .info-value a:hover {
+      text-decoration: underline;
+    }
+    
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      color: var(--gray-800);
+    }
+    
+    .user-activities {
+      margin-top: 2rem;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    
+    .empty-icon {
+      font-size: 3rem;
+      color: var(--gray-400);
+      margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--gray-700);
+    }
+    
+    .empty-state p {
+      color: var(--gray-600);
+    }
+    
+    .action-btn {
+      padding: 0.6rem 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      border: none;
+    }
+    
+    .action-btn-outline {
+      background: transparent;
+      border: 1px solid var(--gray-300);
+      color: var(--gray-700);
+    }
+    
+    .action-btn-outline:hover {
+      background: var(--gray-100);
+      color: var(--gray-900);
+    }
+    
+    .toggle-admin-btn {
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--primary-color);
+      border: 1px solid rgba(67, 97, 238, 0.2);
+    }
+    
+    .toggle-admin-btn:hover {
+      background: rgba(67, 97, 238, 0.2);
+    }
+    
+    .action-btn-success {
+      background: rgba(67, 170, 139, 0.1);
+      color: #43aa8b;
+      border: 1px solid rgba(67, 170, 139, 0.2);
+    }
+    
+    .action-btn-success:hover {
+      background: rgba(67, 170, 139, 0.2);
+    }
+    
+    .action-btn-danger {
+      background: rgba(230, 57, 70, 0.1);
+      color: var(--danger-color);
+      border: 1px solid rgba(230, 57, 70, 0.2);
+    }
+    
+    .action-btn-danger:hover {
+      background: rgba(230, 57, 70, 0.2);
+    }
+  </style>
+
+{% endblock %}

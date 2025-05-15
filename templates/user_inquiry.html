@@ -1,0 +1,1385 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<style>
+  .inquiry-section {
+    padding: 80px 0;
+    background: #f8f9fa;
+  }
+  
+  /* Step Indicator */
+  .step-container {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 40px;
+  }
+  
+  .step-container::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 40px;
+    right: 40px;
+    height: 3px;
+    background: #e9ecef;
+    z-index: 1;
+  }
+  
+  .step {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 33.33%;
+  }
+  
+  .step-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    border: 3px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #6c757d;
+    margin: 0 auto 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .step.active .step-icon {
+    background: #01d28e;
+    border-color: #01d28e;
+    color: white;
+    box-shadow: 0 5px 15px rgba(1, 210, 142, 0.3);
+  }
+  
+  .step.completed .step-icon {
+    background: white;
+    border-color: #01d28e;
+    color: #01d28e;
+  }
+  
+  .step-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6c757d;
+    transition: all 0.3s ease;
+  }
+  
+  .step.active .step-label, .step.completed .step-label {
+    color: #01d28e;
+  }
+  
+  /* Form Card */
+  .inquiry-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+  
+  .inquiry-header {
+    background: linear-gradient(135deg, #01d28e, #01a774);
+    padding: 25px 30px;
+    color: white;
+  }
+  
+  .inquiry-header h2 {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .inquiry-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+  }
+  
+  .inquiry-body {
+    padding: 30px;
+  }
+  
+  /* Car Selection */
+  .cars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .car-card {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+    position: relative;
+  }
+  
+  .car-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .car-card.selected {
+    border-color: #01d28e;
+    box-shadow: 0 10px 20px rgba(1, 210, 142, 0.2);
+  }
+  
+  .car-card.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 25px;
+    height: 25px;
+    background: #01d28e;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .car-image {
+    height: 150px;
+    overflow: hidden;
+  }
+  
+  .car-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .car-card:hover .car-image img {
+    transform: scale(1.05);
+  }
+  
+  .car-info {
+    padding: 15px;
+  }
+  
+  .car-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+  
+  .car-category {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 8px;
+  }
+  
+  .car-price {
+    color: #01d28e;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  
+  /* Filter Buttons */
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .filter-btn {
+    padding: 8px 15px;
+    background: #f8f9fa;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .filter-btn:hover {
+    background: #e9ecef;
+  }
+  
+  .filter-btn.active {
+    background: #01d28e;
+    color: white;
+  }
+  
+  /* Date and Location Inputs */
+  .form-group {
+    margin-bottom: 25px;
+  }
+  
+  .form-label {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #343a40;
+    display: block;
+  }
+  
+  .form-control {
+    height: 50px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 16px;
+    width: 100%;
+  }
+  
+  .form-control:focus {
+    border-color: #01d28e;
+    box-shadow: 0 0 0 0.2rem rgba(1, 210, 142, 0.25);
+    outline: none;
+  }
+  
+  .date-inputs {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .date-input {
+    flex: 1;
+    position: relative;
+  }
+  
+  .date-input i {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    color: #6c757d;
+    pointer-events: none;
+  }
+  
+  .error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+  }
+  
+  .error-message.visible {
+    display: block;
+  }
+  
+  /* Price Calculation */
+  .price-calculation {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 25px;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  .calculation-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  
+  .calculation-total {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #ced4da;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  
+  /* Navigation Buttons */
+  .form-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    gap: 15px;
+  }
+  
+  .btn-prev {
+    background: #f8f9fa;
+    color: #495057;
+    border: 1px solid #ced4da;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .btn-prev:hover {
+    background: #e9ecef;
+  }
+  
+  .btn-next {
+    background: #ced4da;
+    color: #6c757d;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .btn-next.active {
+    background: #01d28e;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .btn-next.active:hover {
+    background: #01a774;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(1, 210, 142, 0.2);
+  }
+  
+  .btn-submit {
+    background: #01d28e;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .btn-submit:hover {
+    background: #01a774;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(1, 210, 142, 0.2);
+  }
+  
+  /* Summary Card */
+  .summary-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    position: sticky;
+    top: 30px;
+  }
+  
+  .summary-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .summary-car-image {
+    width: 100%;
+    height: 160px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+  }
+  
+  .summary-car-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .summary-car-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  .summary-item {
+    margin-bottom: 15px;
+  }
+  
+  .summary-label {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 5px;
+  }
+  
+  .summary-value {
+    font-weight: 600;
+    color: #343a40;
+  }
+  
+  .summary-price {
+    font-size: 24px;
+    color: #01d28e;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+  
+  .summary-disclaimer {
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .form-step {
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
+  
+  .shake {
+    animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 40px 0;
+  }
+  
+  .empty-state i {
+    font-size: 48px;
+    color: #ced4da;
+    margin-bottom: 20px;
+  }
+  
+  .empty-state h3 {
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 10px;
+  }
+  
+  /* Selection Confirmation */
+  .selection-message {
+    display: flex;
+    align-items: center;
+    background: #e8f8f2;
+    border: 1px solid #c0f0df;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  .selection-message i {
+    color: #01d28e;
+    font-size: 20px;
+    margin-right: 10px;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 991px) {
+    .summary-card {
+      margin-top: 30px;
+      position: static;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .step-container::before {
+      left: 20px;
+      right: 20px;
+    }
+    
+    .step-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+    
+    .step-label {
+      font-size: 14px;
+    }
+    
+    .cars-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    
+    .date-inputs {
+      flex-direction: column;
+    }
+    
+    .form-navigation {
+      flex-direction: column;
+    }
+    
+    .btn-prev, .btn-next, .btn-submit {
+      width: 100%;
+    }
+  }
+  
+  /* Additional styling for date inputs */
+  input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    font-family: inherit;
+    font-size: 16px;
+    color: #343a40;
+  }
+  
+  /* Hide calendar icon from the input field */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+  }
+  
+  /* Position the custom calendar icon */
+  .date-input {
+    position: relative;
+  }
+  
+  .date-input i {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    z-index: 1;
+  }
+      .alert {
+      padding: 15px;
+      border-radius: var(--border-radius);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    
+    .alert i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+    
+    .alert-success {
+      background-color: rgba(1, 210, 142, 0.1);
+      color: var(--primary-color);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .alert-danger {
+      background-color: rgba(247, 37, 133, 0.1);
+      color: var(--accent-color);
+      border-left: 4px solid var(--accent-color);
+    }
+    
+    .alert-warning {
+      background-color: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .alert-info {
+      background-color: rgba(67, 97, 238, 0.1);
+      color: var(--secondary-color);
+      border-left: 4px solid var(--secondary-color);
+    }
+    
+    .close-alert {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    
+</style>
+
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('/static/images/ap/ccarshome.jpg');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-start">
+      <div class="col-md-9 ftco-animate pb-5">
+        <p class="breadcrumbs"><span class="mr-2"><a href="/">Home <i class="fa-solid fa-arrow-right"></i></a></span> <span>Car Inquiry <i class="fa-solid fa-arrow-right"></i></span></p>
+        <h1 class="mb-3 bread">Rent a Car</h1>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="inquiry-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <h2 class="mb-4">Make Your Rental Inquiry</h2>
+        <p class="mb-5 text-muted">Follow the easy steps below to submit your car rental inquiry. Once submitted, our team will get back to you with confirmation details.</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+        
+         <!-- Add date picker inputs at the top of your form -->
+        <div class="search-dates-container">
+          <form action="/inquiry/submit" method="GET" class="date-search-form">
+            <div class="form-row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="search-start-date">Start Date</label>
+                  <input type="date" id="search-start-date" name="start_date" class="form-control" 
+                         value="{{ start_date }}" required min="{{ today_date }}">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="search-end-date">End Date</label>
+                  <input type="date" id="search-end-date" name="end_date" class="form-control" 
+                         value="{{ end_date }}" required min="{{ today_date }}">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <button type="submit" class="btn btn-primary btn-block search-btn">
+                    <i class="fas fa-search"></i> Check Availability
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-container">
+          <div class="step active" id="step1-indicator">
+            <div class="step-icon">1</div>
+            <div class="step-label">Choose Car</div>
+          </div>
+          <div class="step" id="step2-indicator">
+            <div class="step-icon">2</div>
+            <div class="step-label">Rental Details</div>
+          </div>
+          <div class="step" id="step3-indicator">
+            <div class="step-icon">3</div>
+            <div class="step-label">Confirm</div>
+          </div>
+        </div>
+        
+        <div class="inquiry-card">
+          <div class="inquiry-header">
+            <h2>Car Rental Inquiry</h2>
+            <p>Fill out the form to book your perfect ride</p>
+          </div>
+          
+          <div class="inquiry-body">
+            <form id="inquiryForm" action="/inquiry/submit" method="POST">
+              <!-- Step 1: Choose Car -->
+              <div id="step1" class="form-step">
+                <div class="form-group">
+                  <div class="filter-buttons">
+                    <button type="button" class="filter-btn active" data-category="all">All Cars</button>
+                    <button type="button" class="filter-btn" data-category="SUV">SUVs</button>
+                    <button type="button" class="filter-btn" data-category="Sedan">Sedans</button>
+                    <button type="button" class="filter-btn" data-category="Hatchback">Hatchbacks</button>
+                    <button type="button" class="filter-btn" data-category="Luxury">Luxury</button>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Select a Vehicle</label>
+                  
+                  <div class="cars-grid">
+                    {% if cars|length > 0 %}
+                      {% for car in cars %}
+                      <div class="car-card" data-id="{{ car._id }}" data-name="{{ car.name }}" data-price="{{ car.price_per_day }}" data-category="{{ car.category }}" data-year="{{ car.year }}" data-fuel="{{ car.fuel_type }}" data-image="{{ car.image }}">
+                        <div class="car-image">
+                          <img src="{{ car.image if car.image else '/static/images/default_car.jpg' }}" alt="{{ car.name }}">
+                        </div>
+                        <div class="car-info">
+                          <h3 class="car-name">{{ car.name }}</h3>
+                          <div class="car-category">{{ car.category }}</div>
+                          <div class="car-price">₹{{ car.price_per_day }}/day</div>
+                        </div>
+                      </div>
+                      {% endfor %}
+                    {% else %}
+                      <div class="empty-state">
+                        <i class="fas fa-car"></i>
+                        <h3>No available cars</h3>
+                        <p>Please check back later or contact us directly.</p>
+                      </div>
+                    {% endif %}
+                  </div>
+                  
+                  <input type="hidden" id="selectedCarId" name="car_id" required>
+                  <div class="error-message" id="carError">Please select a car to continue</div>
+                </div>
+                
+                <div id="carSelectionMessage" class="selection-message" style="display: none;">
+                  <i class="fas fa-check-circle"></i>
+                  <p>You've selected <span id="selectedCarName"></span></p>
+                </div>
+                
+                <div class="form-navigation">
+                  <div></div> <!-- Empty div for spacing -->
+                  <button type="button" id="toStep2" class="btn-next">
+                    Continue <i class="fas fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Step 2: Rental Details -->
+              <div id="step2" class="form-step" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label">Rental Period</label>
+                  <div class="date-inputs">
+                    <div class="date-input">
+                      <input type="date" class="form-control" id="startDate" placeholder="Pick-up Date" required min="{{ tomorrow_date }}">
+                      <i class="far fa-calendar"></i>
+                      <input type="hidden" name="start_date" id="startDateHidden">
+                    </div>
+                    <div class="date-input">
+                      <input type="date" class="form-control" id="endDate" placeholder="Return Date" required min="{{ tomorrow_date }}">
+                      <i class="far fa-calendar"></i>
+                      <input type="hidden" name="end_date" id="endDateHidden">
+                    </div>
+                  </div>
+                  <div class="error-message" id="dateError">Please select valid rental dates</div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Pick-up Location</label>
+                  <input type="text" class="form-control" id="pickupLocation" name="pickup_location" placeholder="Enter pick-up location" required>
+                  <div class="error-message" id="pickupError">Please enter a pick-up location</div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Return Location</label>
+                  <input type="text" class="form-control" id="returnLocation" name="return_location" placeholder="Enter return location" required>
+                  <div class="error-message" id="returnError">Please enter a return location</div>
+                </div>
+                
+                <div id="priceCalculation" class="price-calculation" style="display: none;">
+                  <h5 class="mb-3">Price Breakdown</h5>
+                  <div class="calculation-row">
+                    <span>Daily Rate:</span>
+                    <span id="dailyRate">₹0</span>
+                  </div>
+                  <div class="calculation-row">
+                    <span>Number of Days:</span>
+                    <span id="totalDays">0</span>
+                  </div>
+                  <div class="calculation-row calculation-total">
+                    <span>Total Price:</span>
+                    <span id="totalPrice">₹0</span>
+                  </div>
+                </div>
+                
+                <div class="form-navigation">
+                  <button type="button" id="backToStep1" class="btn-prev">
+                    <i class="fas fa-arrow-left"></i> Back
+                  </button>
+                  <button type="button" id="toStep3" class="btn-next">
+                    Continue <i class="fas fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Step 3: Confirm & Submit -->
+              <div id="step3" class="form-step" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label">Additional Information</label>
+                  <textarea class="form-control" id="message" name="message" placeholder="Any special requests or questions?" rows="4"></textarea>
+                </div>
+                
+                <div class="price-calculation">
+                  <h5 class="mb-3">Rental Summary</h5>
+                  <div class="calculation-row">
+                    <span>Selected Vehicle:</span>
+                    <span id="summaryCarName">-</span>
+                  </div>
+                  <div class="calculation-row">
+                    <span>Rental Period:</span>
+                    <span id="summaryDates">-</span>
+                  </div>
+                  <div class="calculation-row">
+                    <span>Pickup/Return:</span>
+                    <span id="summaryLocations">-</span>
+                  </div>
+                  <div class="calculation-row calculation-total">
+                    <span>Total Price:</span>
+                    <span id="summaryPrice">₹0</span>
+                  </div>
+                </div>
+                
+                <div class="form-navigation">
+                  <button type="button" id="backToStep2" class="btn-prev">
+                    <i class="fas fa-arrow-left"></i> Back
+                  </button>
+                  <button type="submit" class="btn-submit">
+                    Submit Inquiry <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-10 col-lg-4">
+        <div class="summary-card">
+          <h4 class="summary-title">Your Selection</h4>
+          
+          <div id="summaryCarSection" style="display: none;">
+            <div class="summary-car-image">
+              <img id="summaryCarImage" src="/static/images/default_car.jpg" alt="Selected Car">
+            </div>
+            <h5 id="sidebarCarName" class="summary-car-name">No car selected</h5>
+            
+            <div class="summary-item">
+              <div class="summary-label">Category</div>
+              <div id="sidebarCategory" class="summary-value">-</div>
+            </div>
+            
+            <div class="summary-item">
+              <div class="summary-label">Year</div>
+              <div id="sidebarYear" class="summary-value">-</div>
+            </div>
+            
+            <div class="summary-item">
+              <div class="summary-label">Fuel Type</div>
+              <div id="sidebarFuel" class="summary-value">-</div>
+            </div>
+            
+            <div class="summary-item">
+              <div class="summary-label">Rental Period</div>
+              <div id="sidebarDates" class="summary-value">Not selected yet</div>
+            </div>
+            
+            <div class="summary-item">
+              <div class="summary-label">Pickup Location</div>
+              <div id="sidebarPickup" class="summary-value">Not specified</div>
+            </div>
+            
+            <div class="summary-item">
+              <div class="summary-label">Return Location</div>
+              <div id="sidebarReturn" class="summary-value">Not specified</div>
+            </div>
+            
+            <div class="summary-item">
+              <div class="summary-label">Total Price</div>
+              <div id="sidebarPrice" class="summary-price">₹0</div>
+            </div>
+          </div>
+          
+          <div id="emptySummary">
+            <div class="empty-state">
+              <i class="fas fa-car"></i>
+              <h3>No Car Selected</h3>
+              <p>Select a car to see the details</p>
+            </div>
+          </div>
+          
+          <div class="summary-disclaimer">
+            <p>* This is just an inquiry. We will confirm availability and exact pricing.</p>
+            <p>* Payment will be processed after confirmation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Variables for form state
+    let selectedCar = {
+      id: '',
+      name: '',
+      price: 0,
+      category: '',
+      year: '',
+      fuel: '',
+      image: ''
+    };
+    
+    let rentalDates = {
+      start: null,
+      end: null,
+      days: 0
+    };
+    
+    let locations = {
+      pickup: '',
+      return: ''
+    };
+    
+    let totalPrice = 0;
+    
+    // Form step elements
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    
+    const step1Indicator = document.getElementById('step1-indicator');
+    const step2Indicator = document.getElementById('step2-indicator');
+    const step3Indicator = document.getElementById('step3-indicator');
+    
+    // Step 1: Car Selection
+    const carCards = document.querySelectorAll('.car-card');
+    const selectedCarIdInput = document.getElementById('selectedCarId');
+    const selectedCarNameSpan = document.getElementById('selectedCarName');
+    const carSelectionMessage = document.getElementById('carSelectionMessage');
+    const carError = document.getElementById('carError');
+    const toStep2Button = document.getElementById('toStep2');
+    
+    // Filter buttons
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    
+    // Step 2: Rental Details
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const startDateHidden = document.getElementById('startDateHidden');
+    const endDateHidden = document.getElementById('endDateHidden');
+    const pickupLocationInput = document.getElementById('pickupLocation');
+    const returnLocationInput = document.getElementById('returnLocation');
+    const priceCalculation = document.getElementById('priceCalculation');
+    const dailyRateSpan = document.getElementById('dailyRate');
+    const totalDaysSpan = document.getElementById('totalDays');
+    const totalPriceSpan = document.getElementById('totalPrice');
+    const dateError = document.getElementById('dateError');
+    const pickupError = document.getElementById('pickupError');
+    const returnError = document.getElementById('returnError');
+    const toStep3Button = document.getElementById('toStep3');
+    
+    // Step 3: Confirmation
+    const summaryCarNameSpan = document.getElementById('summaryCarName');
+    const summaryDatesSpan = document.getElementById('summaryDates');
+    const summaryLocationsSpan = document.getElementById('summaryLocations');
+    const summaryPriceSpan = document.getElementById('summaryPrice');
+    
+    // Navigation buttons
+    const backToStep1Button = document.getElementById('backToStep1');
+    const backToStep2Button = document.getElementById('backToStep2');
+    
+    // Sidebar summary elements
+    const summaryCarSection = document.getElementById('summaryCarSection');
+    const emptySummary = document.getElementById('emptySummary');
+    const summaryCarImage = document.getElementById('summaryCarImage');
+    const sidebarCarName = document.getElementById('sidebarCarName');
+    const sidebarCategory = document.getElementById('sidebarCategory');
+    const sidebarYear = document.getElementById('sidebarYear');
+    const sidebarFuel = document.getElementById('sidebarFuel');
+    const sidebarDates = document.getElementById('sidebarDates');
+    const sidebarPickup = document.getElementById('sidebarPickup');
+    const sidebarReturn = document.getElementById('sidebarReturn');
+    const sidebarPrice = document.getElementById('sidebarPrice');
+    
+    // ===== STEP 1: Car Selection =====
+    
+    // Car filter functionality
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        const category = this.getAttribute('data-category');
+        
+        // Filter cars
+        carCards.forEach(card => {
+          if (category === 'all' || card.getAttribute('data-category') === category) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+    
+    // Car selection
+    carCards.forEach(card => {
+      card.addEventListener('click', function() {
+        // Clear previous selection
+        carCards.forEach(c => c.classList.remove('selected'));
+        
+        // Mark this card as selected
+        this.classList.add('selected');
+        
+        // Get selected car data
+        selectedCar.id = this.getAttribute('data-id');
+        selectedCar.name = this.getAttribute('data-name');
+        selectedCar.price = parseInt(this.getAttribute('data-price'));
+        selectedCar.category = this.getAttribute('data-category');
+        selectedCar.year = this.getAttribute('data-year');
+        selectedCar.fuel = this.getAttribute('data-fuel');
+        selectedCar.image = this.getAttribute('data-image');
+        
+        // Update form input
+        selectedCarIdInput.value = selectedCar.id;
+        
+        // Show selection confirmation
+        selectedCarNameSpan.textContent = selectedCar.name;
+        carSelectionMessage.style.display = 'flex';
+        
+        // Enable next button
+        toStep2Button.classList.add('active');
+        
+        // Hide error message if shown
+        carError.classList.remove('visible');
+        
+        // Update sidebar summary
+        updateSidebar();
+        
+        // Update price calculation if dates are already selected
+        if (rentalDates.start && rentalDates.end) {
+          updatePriceCalculation();
+        }
+      });
+    });
+    
+    // Navigation: Step 1 to Step 2
+    toStep2Button.addEventListener('click', function() {
+      if (validateStep1()) {
+        // Update UI
+        step1.style.display = 'none';
+        step2.style.display = 'block';
+        
+        step1Indicator.classList.remove('active');
+        step1Indicator.classList.add('completed');
+        step2Indicator.classList.add('active');
+        
+        // Initialize date pickers now that step 2 is visible
+        initializeDatePickers();
+      }
+    });
+    
+    function validateStep1() {
+      if (!selectedCar.id) {
+        carError.classList.add('visible');
+        toStep2Button.classList.add('shake');
+        setTimeout(() => {
+          toStep2Button.classList.remove('shake');
+        }, 600);
+        return false;
+      }
+      return true;
+    }
+    
+    // ===== STEP 2: Rental Details =====
+    
+    // Initialize date pickers
+    function initializeDatePickers() {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      // Set minimum dates
+      const minDateStr = tomorrow.toISOString().split('T')[0];
+      document.getElementById('startDate').min = minDateStr;
+      document.getElementById('endDate').min = minDateStr;
+      
+      // Handle date changes
+      document.getElementById('startDate').addEventListener('change', function() {
+        const startDate = this.value;
+        if (startDate) {
+          // Set minimum end date to be at least the start date
+          document.getElementById('endDate').min = startDate;
+          
+          // Update hidden input
+          document.getElementById('startDateHidden').value = startDate;
+          
+          // Create date object for validation
+          rentalDates.start = new Date(startDate);
+          
+          // Check if end date is already selected
+          if (document.getElementById('endDate').value) {
+            updateDateValidation();
+          }
+        }
+      });
+      
+      document.getElementById('endDate').addEventListener('change', function() {
+        const endDate = this.value;
+        if (endDate) {
+          // Update hidden input
+          document.getElementById('endDateHidden').value = endDate;
+          
+          // Create date object for validation
+          rentalDates.end = new Date(endDate);
+          
+          // Check if start date is already selected
+          if (document.getElementById('startDate').value) {
+            updateDateValidation();
+          }
+        }
+      });
+    }
+    
+    // Date validation
+    function updateDateValidation() {
+      const dateError = document.getElementById('dateError');
+      const priceCalculation = document.getElementById('priceCalculation');
+      
+      if (rentalDates.start && rentalDates.end) {
+        // Check if end date is after start date
+        if (rentalDates.end < rentalDates.start) {
+          dateError.textContent = 'Return date must be after pick-up date';
+          dateError.classList.add('visible');
+          document.getElementById('endDate').classList.add('error');
+          priceCalculation.style.display = 'none';
+          return;
+        }
+        
+        // Calculate number of days
+        const timeDiff = rentalDates.end.getTime() - rentalDates.start.getTime();
+        rentalDates.days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        
+        if (rentalDates.days < 1) {
+          rentalDates.days = 1; // Minimum 1 day rental
+        }
+        
+        // Update price calculation
+        totalPrice = selectedCar.price * rentalDates.days;
+        
+        // Update price breakdown
+        document.getElementById('dailyRate').textContent = '₹' + selectedCar.price;
+        document.getElementById('totalDays').textContent = rentalDates.days;
+        document.getElementById('totalPrice').textContent = '₹' + totalPrice;
+        
+        // Format dates for display
+        const startDateDisplay = formatDateForDisplay(rentalDates.start);
+        const endDateDisplay = formatDateForDisplay(rentalDates.end);
+        
+        // Show price calculation
+        priceCalculation.style.display = 'block';
+        
+        // Update sidebar
+        document.getElementById('sidebarDates').textContent = startDateDisplay + ' to ' + endDateDisplay;
+        document.getElementById('sidebarPrice').textContent = '₹' + totalPrice;
+        
+        // Clear error if any
+        dateError.classList.remove('visible');
+        document.getElementById('startDate').classList.remove('error');
+        document.getElementById('endDate').classList.remove('error');
+        
+        // Check if we can enable the next button
+        checkStep2Completion();
+      }
+    }
+    
+    // Helper function to format dates
+    function formatDateForDisplay(date) {
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      return date.toLocaleDateString('en-IN', options);
+    }
+    
+    // Location inputs
+    pickupLocationInput.addEventListener('input', function() {
+      locations.pickup = this.value.trim();
+      sidebarPickup.textContent = locations.pickup || 'Not specified';
+      
+      if (locations.pickup) {
+        pickupError.classList.remove('visible');
+        this.classList.remove('error');
+      }
+      
+      checkStep2Completion();
+    });
+    
+    returnLocationInput.addEventListener('input', function() {
+      locations.return = this.value.trim();
+      sidebarReturn.textContent = locations.return || 'Not specified';
+      
+      if (locations.return) {
+        returnError.classList.remove('visible');
+        this.classList.remove('error');
+      }
+      
+      checkStep2Completion();
+    });
+    
+    // Update price calculation
+    function updatePriceCalculation() {
+      if (selectedCar.price > 0 && rentalDates.days > 0) {
+        totalPrice = selectedCar.price * rentalDates.days;
+        
+        // Update price breakdown
+        dailyRateSpan.textContent = '₹' + selectedCar.price;
+        totalDaysSpan.textContent = rentalDates.days;
+        totalPriceSpan.textContent = '₹' + totalPrice;
+        sidebarPrice.textContent = '₹' + totalPrice;
+        
+        // Show price calculation
+        priceCalculation.style.display = 'block';
+      }
+    }
+    
+    // Check if step 2 is complete
+    function checkStep2Completion() {
+      if (rentalDates.start && rentalDates.end && rentalDates.days > 0 && 
+          locations.pickup && locations.return) {
+        toStep3Button.classList.add('active');
+      } else {
+        toStep3Button.classList.remove('active');
+      }
+    }
+    
+    // Navigation: Go back to Step 1
+    backToStep1Button.addEventListener('click', function() {
+      step2.style.display = 'none';
+      step1.style.display = 'block';
+      
+      step2Indicator.classList.remove('active');
+      step1Indicator.classList.remove('completed');
+      step1Indicator.classList.add('active');
+    });
+    
+    // Navigation: Step 2 to Step 3
+    toStep3Button.addEventListener('click', function() {
+      if (validateStep2()) {
+        // Update summary
+        summaryCarNameSpan.textContent = selectedCar.name;
+        summaryDatesSpan.textContent = rentalDates.start.toLocaleDateString('en-IN') + ' to ' + rentalDates.end.toLocaleDateString('en-IN');
+        summaryLocationsSpan.textContent = locations.pickup + ' to ' + locations.return;
+        summaryPriceSpan.textContent = '₹' + totalPrice;
+        
+        // Update UI
+        step2.style.display = 'none';
+        step3.style.display = 'block';
+        
+        step2Indicator.classList.remove('active');
+        step2Indicator.classList.add('completed');
+        step3Indicator.classList.add('active');
+      }
+    });
+    
+    function validateStep2() {
+      let valid = true;
+      
+      // Validate dates
+      if (!document.getElementById('startDate').value || !document.getElementById('endDate').value) {
+        dateError.textContent = 'Please select both pickup and return dates';
+        dateError.classList.add('visible');
+        valid = false;
+      } else if (rentalDates.end < rentalDates.start) {
+        dateError.textContent = 'Return date must be after pick-up date';
+        dateError.classList.add('visible');
+        document.getElementById('endDate').classList.add('error');
+        valid = false;
+      }
+      
+      // Validate pickup location
+      if (!locations.pickup) {
+        pickupError.classList.add('visible');
+        pickupLocationInput.classList.add('error');
+        valid = false;
+      }
+      
+      // Validate return location
+      if (!locations.return) {
+        returnError.classList.add('visible');
+        returnLocationInput.classList.add('error');
+        valid = false;
+      }
+      
+      if (!valid) {
+        toStep3Button.classList.add('shake');
+        setTimeout(() => {
+          toStep3Button.classList.remove('shake');
+        }, 600);
+      }
+      
+      return valid;
+    }
+    
+    // Navigation: Go back to Step 2
+    backToStep2Button.addEventListener('click', function() {
+      step3.style.display = 'none';
+      step2.style.display = 'block';
+      
+      step3Indicator.classList.remove('active');
+      step2Indicator.classList.remove('completed');
+      step2Indicator.classList.add('active');
+    });
+    
+    // Update sidebar summary
+    function updateSidebar() {
+      if (selectedCar.id) {
+        // Update car details
+        summaryCarImage.src = selectedCar.image || '/static/images/default_car.jpg';
+        sidebarCarName.textContent = selectedCar.name;
+        sidebarCategory.textContent = selectedCar.category;
+        sidebarYear.textContent = selectedCar.year;
+        sidebarFuel.textContent = selectedCar.fuel;
+        
+        // Show car section, hide empty state
+        summaryCarSection.style.display = 'block';
+        emptySummary.style.display = 'none';
+      } else {
+        // Show empty state
+        summaryCarSection.style.display = 'none';
+        emptySummary.style.display = 'block';
+      }
+    }
+    
+    // Form submission validation
+    document.getElementById('inquiryForm').addEventListener('submit', function(e) {
+      if (!selectedCar.id) {
+        e.preventDefault();
+        alert('Please select a car before submitting.');
+        return false;
+      }
+      
+      if (!rentalDates.start || !rentalDates.end) {
+        e.preventDefault();
+        alert('Please select valid rental dates.');
+        return false;
+      }
+      
+      if (!locations.pickup || !locations.return) {
+        e.preventDefault();
+        alert('Please enter both pickup and return locations.');
+        return false;
+      }
+      
+      return true;
+    });
+  });
+</script>
+{% endblock %}

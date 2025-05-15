@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>AlexaCars - Manage Inquiries</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_cars.css') }}">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="brand">
+        <span class="brand-logo">Alexa<span class="brand-name">Cars</span></span>
+      </a>
+    </div>
+    
+    <div class="user-profile">
+      <div class="user-avatar">
+        {{ user.first_name[0] }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ user.first_name }}</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+    
+    <ul class="sidebar-menu">
+      <li class="sidebar-item">
+        <a href="/" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+          Home
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/dashboard" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-tachometer-alt"></i></span>
+          Dashboard
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/cars" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-car"></i></span>
+          Manage Cars
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/bookings" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-calendar-check"></i></span>
+          Bookings
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/inquiries" class="sidebar-link active">
+          <span class="sidebar-icon"><i class="fas fa-comment-dots"></i></span>
+          Inquiries
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/users" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+          Users
+        </a>
+      </li>
+    </ul>
+    
+    <div class="sidebar-footer">
+      <a href="/logout" class="logout-btn">
+        <span class="logout-icon"><i class="fas fa-sign-out-alt"></i></span>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">Manage Inquiries</h1>
+        <p class="page-subtitle">View and respond to customer inquiries</p>
+      </div>
+      <div class="header-actions">
+        <span class="date-display" id="current-date"></span>
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Inquiry Stats Overview -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">Pending Inquiries</span>
+          <div class="stat-icon">
+            <i class="fas fa-question-circle"></i>
+          </div>
+        </div>
+        <div class="stat-value">
+            {{ pending_inquiries|length }}
+        </div>
+        <div class="stat-description">Awaiting your response</div>
+      </div>
+
+      <div class="stat-card success">
+        <div class="stat-header">
+          <span class="stat-title">Approved Inquiries</span>
+          <div class="stat-icon success">
+            <i class="fas fa-check-circle"></i>
+          </div>
+        </div>
+        <div class="stat-value">
+            {{ approved_inquiries|length }}
+        </div>
+        <div class="stat-description">Converted to bookings</div>
+      </div>
+
+      <div class="stat-card warning">
+        <div class="stat-header">
+          <span class="stat-title">Today's Inquiries</span>
+          <div class="stat-icon warning">
+            <i class="fas fa-calendar-day"></i>
+          </div>
+        </div>
+        <div class="stat-value">
+            {{ today_inquiries|length }}
+        </div>
+        <div class="stat-description">Received in the last 24 hours</div>
+      </div>
+
+      <div class="stat-card danger">
+        <div class="stat-header">
+          <span class="stat-title">Response Rate</span>
+          <div class="stat-icon danger">
+            <i class="fas fa-chart-line"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ response_rate }}%</div>
+        <div class="stat-description">Inquiries responded to</div>
+      </div>
+    </div>
+
+    <!-- Inquiry List Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Customer Inquiries</h2>
+        <div class="card-actions">
+          <div class="search-container">
+            <input type="text" id="inquirySearch" placeholder="Search inquiries..." class="search-input">
+            <i class="fas fa-search search-icon"></i>
+          </div>
+          <div class="filter-container">
+            <select id="statusFilter" class="filter-select">
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+
+          <!-- All Inquiries Tab -->
+          <div class="tab-content active" id="all">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Inquiry ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Dates</th>
+                    <th>Total</th>
+                    <th>Created On</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if inquiries|length > 0 %}
+                    {% for inquiry in inquiries %}
+                    <tr class="inquiry-row" data-status="{{ inquiry.status }}">
+                      <td>#{{ inquiry._id|string|truncate(8, True, '') }}</td>
+                      <td>{{ inquiry.user_name if inquiry.user_name else "User #" + inquiry.user_id }}</td>
+                      <td>{{ inquiry.car_name }}</td>
+                      <td>{{ inquiry.start_date }} to {{ inquiry.end_date }}</td>
+                      <td>₹{{ inquiry.total_price }}</td>
+                      <td>{{ inquiry.created_at.strftime('%d %b %Y') if inquiry.created_at else "N/A" }}</td>
+                      <td>
+                        <span class="badge badge-{{ 
+                          'primary' if inquiry.status == 'pending' else 
+                          'success' if inquiry.status == 'approved' else 
+                          'danger' if inquiry.status == 'rejected' else 
+                          'secondary' if inquiry.status == 'cancelled' else 
+                          'warning' 
+                        }}">
+                          {{ inquiry.status|capitalize }}
+                        </span>
+                        {% if inquiry.booking_id %}
+                        <span class="badge badge-info">Booked</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <div class="action-buttons">
+                          <a href="/admin/inquiries/view/{{ inquiry._id }}" class="action-btn action-btn-primary">
+                            <i class="fas fa-eye"></i> View
+                          </a>
+                          {% if inquiry.booking_id %}
+                          <a href="/admin/bookings/view/{{ inquiry.booking_id }}" class="action-btn">
+                            <i class="fas fa-calendar-check"></i> Booking
+                          </a>
+                          {% elif inquiry.status == 'pending' %}
+                          <button class="action-btn" onclick="quickApprove('{{ inquiry._id }}')">
+                            <i class="fas fa-check"></i> Approve
+                          </button>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="8" class="text-center py-4">No inquiries found.</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Other tabs would be similar but with filtered data -->
+          <!-- ... -->
+          
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Quick Approve Modal -->
+  <div class="modal" id="approveModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Approve Inquiry</h3>
+          <button type="button" class="close-modal" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to approve this inquiry? This will create a booking record.</p>
+          <form id="approveForm" action="/admin/inquiries/update/" method="POST">
+            <input type="hidden" name="status" value="approved">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-primary" id="confirmApprove">Approve</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Set current date display
+    document.addEventListener('DOMContentLoaded', function() {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', options);
+      
+      // Tab navigation
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons and contents
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          
+          // Add active class to clicked button and corresponding content
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Search functionality
+      document.getElementById('inquirySearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const activeTab = document.querySelector('.tab-content.active');
+        const rows = activeTab.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+      
+      // Status filter
+      document.getElementById('statusFilter').addEventListener('change', function() {
+        const status = this.value;
+        const rows = document.querySelectorAll('.inquiry-row');
+        
+        if (status === 'all') {
+          rows.forEach(row => row.style.display = '');
+          return;
+        }
+        
+        rows.forEach(row => {
+          if (row.getAttribute('data-status') === status) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+      
+      // Approve inquiry confirmation
+      document.getElementById('confirmApprove').addEventListener('click', function() {
+        document.getElementById('approveForm').submit();
+      });
+      
+      // Close modal functionality
+      document.querySelectorAll('[data-dismiss="modal"]').forEach(element => {
+        element.addEventListener('click', function() {
+          document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+          });
+        });
+      });
+      
+      // Close when clicking outside
+      window.addEventListener('click', function(event) {
+        document.querySelectorAll('.modal').forEach(modal => {
+          if (event.target === modal) {
+            modal.style.display = 'none';
+          }
+        });
+      });
+      
+      // Alert close functionality
+      document.querySelectorAll('.close-alert').forEach(button => {
+        button.addEventListener('click', function() {
+          this.parentElement.style.display = 'none';
+        });
+      });
+    });
+    
+    // Quick approve function
+    function quickApprove(inquiryId) {
+      const form = document.getElementById('approveForm');
+      form.action = `/admin/inquiries/update/${inquiryId}`;
+      document.getElementById('approveModal').style.display = 'block';
+    }
+  </script>
+
+  <style>
+    /* Additional Styles for Inquiry Management */
+    .badge-info {
+      background: rgba(13, 202, 240, 0.1);
+      color: #0dcaf0;
+    }
+    
+    /* ... rest of your styles ... */
+  </style>
+</body>
+</html>

@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>AlexaCars - View Booking</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_cars.css') }}">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="brand">
+        <span class="brand-logo">Alexa<span class="brand-name">Cars</span></span>
+      </a>
+    </div>
+    
+    <div class="user-profile">
+      <div class="user-avatar">
+        {{ user.first_name[0] }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ user.first_name }}</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+    
+    <ul class="sidebar-menu">
+      <li class="sidebar-item">
+        <a href="/" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+          Home
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/dashboard" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-tachometer-alt"></i></span>
+          Dashboard
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/cars" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-car"></i></span>
+          Manage Cars
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/bookings" class="sidebar-link active">
+          <span class="sidebar-icon"><i class="fas fa-calendar-check"></i></span>
+          Bookings
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/inquiries" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-comment-dots"></i></span>
+          Inquiries
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="/admin/users" class="sidebar-link">
+          <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+          Users
+        </a>
+      </li>
+    </ul>
+    
+    <div class="sidebar-footer">
+      <a href="/logout" class="logout-btn">
+        <span class="logout-icon"><i class="fas fa-sign-out-alt"></i></span>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div>
+        <h1 class="page-title">Booking Details</h1>
+        <p class="page-subtitle">Booking #{{ booking._id|string|truncate(8, True, '') }}</p>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/bookings" class="btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Bookings
+        </a>
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="close-alert"><i class="fas fa-times"></i></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Booking Status Banner -->
+    <div class="status-banner status-{{ booking.status }}">
+      <div class="status-icon">
+        <i class="fas {% if booking.status == 'upcoming' %}fa-hourglass-start
+                       {% elif booking.status == 'active' %}fa-car-side
+                       {% elif booking.status == 'completed' %}fa-check-circle
+                       {% elif booking.status == 'cancelled' %}fa-ban
+                       {% else %}fa-question-circle{% endif %}"></i>
+      </div>
+      <div class="status-info">
+        <div class="status-title">{{ booking.status|capitalize }}</div>
+        <div class="status-description">
+          {% if booking.status == 'upcoming' %}
+            This booking is scheduled and not yet active.
+          {% elif booking.status == 'active' %}
+            This booking is currently active.
+          {% elif booking.status == 'completed' %}
+            This booking has been completed successfully.
+          {% elif booking.status == 'cancelled' %}
+            This booking has been cancelled.
+          {% else %}
+            The status of this booking is unknown.
+          {% endif %}
+        </div>
+      </div>
+      <div class="status-actions">
+        <a href="/admin/inquiries/view/{{ booking.inquiry_id
+ }}">
+            <button class="btn-primary">
+            <i class="fas fa-edit"></i> Update Status
+            </button>
+        </a>
+      </div>
+    </div>
+
+    <div class="booking-details-container">
+      <div class="row">
+        <!-- Main Booking Details -->
+        <div class="col-lg-8">
+          <!-- Booking Information Card -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Booking Information</h2>
+              {% if booking.inquiry_id %}
+              <a href="/admin/inquiries/view/{{ booking.inquiry_id }}" class="badge badge-info">
+                <i class="fas fa-link"></i> View Original Inquiry
+              </a>
+              {% endif %}
+            </div>
+            <div class="card-body">
+              <div class="booking-section">
+                <h3 class="section-title">Rental Details</h3>
+                <div class="detail-row">
+                  <div class="detail-label">Rental Period</div>
+                  <div class="detail-value">{{ booking.start_date }} to {{ booking.end_date }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Duration</div>
+                  <div class="detail-value">{{ booking.days }} day{% if booking.days != 1 %}s{% endif %}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Pick-up Location</div>
+                  <div class="detail-value">{{ booking.pickup_location }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Return Location</div>
+                  <div class="detail-value">{{ booking.return_location }}</div>
+                </div>
+              </div>
+
+              <div class="booking-section">
+                <h3 class="section-title">Payment Information</h3>
+                <div class="detail-row">
+                  <div class="detail-label">Daily Rate</div>
+                  <div class="detail-value">₹{{ booking.price_per_day }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Total Amount</div>
+                  <div class="detail-value price-highlight">₹{{ booking.total_price }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Payment Status</div>
+                  <div class="detail-value">
+                    <span class="badge badge-{% if booking.payment_status == 'paid' %}success{% elif booking.payment_status == 'pending' %}warning{% else %}danger{% endif %}">
+                      {{ booking.payment_status|default('Pending', true)|capitalize }}
+                    </span>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Payment Method</div>
+                  <div class="detail-value">{{ booking.payment_method|default('Not specified', true) }}</div>
+                </div>
+              </div>
+
+              {% if booking.extension_history and booking.extension_history|length > 0 %}
+              <div class="booking-section">
+                <h3 class="section-title">Extension History</h3>
+                <div class="extension-history">
+                  {% for extension in booking.extension_history %}
+                  <div class="extension-item">
+                    <div class="extension-header">
+                      <div class="extension-date">{{ extension.extended_at.strftime('%d %b %Y') if extension.extended_at else "N/A" }}</div>
+                      <div class="extension-amount">+₹{{ extension.additional_amount }}</div>
+                    </div>
+                    <div class="extension-details">
+                      <div class="extension-dates">{{ extension.original_end_date }} → {{ extension.new_end_date }}</div>
+                      {% if extension.reason %}
+                      <div class="extension-reason">{{ extension.reason }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+
+              {% if booking.status_history and booking.status_history|length > 0 %}
+              <div class="booking-section">
+                <h3 class="section-title">Status Timeline</h3>
+                <div class="status-timeline">
+                  {% for status_change in booking.status_history %}
+                  <div class="timeline-item">
+                    <div class="timeline-icon status-{{ status_change.status }}">
+                      <i class="fas {% if status_change.status == 'upcoming' %}fa-hourglass-start
+                                   {% elif status_change.status == 'active' %}fa-car-side
+                                   {% elif status_change.status == 'completed' %}fa-check-circle
+                                   {% elif status_change.status == 'cancelled' %}fa-ban
+                                   {% else %}fa-question-circle{% endif %}"></i>
+                    </div>
+                    <div class="timeline-content">
+                      <div class="timeline-header">
+                        <div class="timeline-title">Changed to <span class="status-text {{ status_change.status }}">{{ status_change.status|capitalize }}</span></div>
+                        <div class="timeline-date">{{ status_change.changed_at.strftime('%d %b %Y, %H:%M') if status_change.changed_at else "N/A" }}</div>
+                      </div>
+                      {% if status_change.notes %}
+                      <div class="timeline-notes">{{ status_change.notes }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+
+              <div class="booking-section">
+                <h3 class="section-title">Admin Notes</h3>
+                <div class="notes-container">
+                  <textarea id="adminNotes" class="admin-notes-textarea" placeholder="Add private notes about this booking...">{{ booking.admin_notes|default('', true) }}</textarea>
+                  <button class="btn-primary save-notes-btn" onclick="saveAdminNotes()">Save Notes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons-container">
+            <button class="action-btn" onclick="generateInvoice('{{ booking._id }}')">
+              <i class="fas fa-file-invoice"></i> Generate Invoice
+            </button>
+            {% if booking.status == 'active' %}
+            <button class="action-btn action-btn-warning" onclick="showExtendModal()">
+              <i class="fas fa-calendar-plus"></i> Extend Booking
+            </button>
+            {% endif %}
+            {% if booking.status != 'cancelled' and booking.status != 'completed' %}
+            <button class="action-btn action-btn-danger" onclick="confirmCancelBooking()">
+              <i class="fas fa-ban"></i> Cancel Booking
+            </button>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Sidebar Information -->
+        <div class="col-lg-4">
+          <!-- Customer Information Card -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Customer Information</h2>
+            </div>
+            <div class="card-body">
+              <div class="customer-header">
+                <div class="customer-avatar">
+                  {{ customer.first_name[0] if customer and customer.first_name else 'U' }}
+                </div>
+                <div class="customer-name">
+                  {{ customer.first_name + ' ' + customer.last_name if customer else booking.customer_name if booking.customer_name else "Unknown Customer" }}
+                </div>
+              </div>
+
+              <div class="customer-info">
+                {% if customer %}
+                <div class="info-item">
+                  <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                  <div class="info-text">{{ customer.email }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-icon"><i class="fas fa-phone"></i></div>
+                  <div class="info-text">{{ customer.phone }}</div>
+                </div>
+                {% else %}
+                <div class="no-customer-info">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <p>Detailed customer information is not available.</p>
+                </div>
+                {% endif %}
+              </div>
+
+              {% if customer %}
+              <div class="customer-actions">
+                <a href="mailto:{{ customer.email }}" class="btn-secondary full-width">
+                  <i class="fas fa-envelope"></i> Email Customer
+                </a>
+                <a href="tel:{{ customer.phone }}" class="btn-secondary full-width">
+                  <i class="fas fa-phone"></i> Call Customer
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Vehicle Information Card -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h2 class="card-title">Vehicle Information</h2>
+            </div>
+            <div class="card-body">
+              {% if car %}
+              <div class="vehicle-image">
+                <img src="{{ car.image if car.image else '/static/images/default_car.jpg' }}" alt="{{ car.name }}">
+              </div>
+              <div class="vehicle-details">
+                <h3 class="vehicle-name">{{ car.name }}</h3>
+                <div class="vehicle-meta">
+                  <div class="meta-item">
+                    <div class="meta-icon"><i class="fas fa-tag"></i></div>
+                    <div class="meta-text">{{ car.category }}</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="meta-text">{{ car.year }}</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-icon"><i class="fas fa-gas-pump"></i></div>
+                    <div class="meta-text">{{ car.fuel_type }}</div>
+                  </div>
+                </div>
+                <a href="/admin/cars/view/{{ car._id }}" class="btn-primary full-width">
+                  <i class="fas fa-car"></i> View Vehicle Details
+                </a>
+              </div>
+              {% else %}
+              <div class="no-vehicle-info">
+                <i class="fas fa-car"></i>
+                <p>Vehicle details are not available or the vehicle no longer exists.</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Booking Meta Information -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h2 class="card-title">Booking Meta</h2>
+            </div>
+            <div class="card-body">
+              <div class="meta-grid">
+                <div class="meta-item">
+                  <div class="meta-label">Created On</div>
+                  <div class="meta-value">{{ booking.created_at.strftime('%d %b %Y') if booking.created_at else "N/A" }}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Last Updated</div>
+                  <div class="meta-value">{{ booking.updated_at.strftime('%d %b %Y') if booking.updated_at else "N/A" }}</div>
+                </div>
+                {% if booking.completed_at %}
+                <div class="meta-item">
+                  <div class="meta-label">Completed On</div>
+                  <div class="meta-value">{{ booking.completed_at.strftime('%d %b %Y') if booking.completed_at else "N/A" }}</div>
+                </div>
+                {% endif %}
+                <div class="meta-item">
+                  <div class="meta-label">Booking ID</div>
+                  <div class="meta-value id-value">{{ booking._id }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Status Update Modal -->
+  <div class="modal" id="statusModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Update Booking Status</h3>
+          <button type="button" class="close-modal" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="updateStatusForm" action="/admin/bookings/update-status" method="POST">
+            <input type="hidden" name="booking_id" value="{{ booking._id }}">
+            
+            <div class="form-group">
+              <label for="bookingStatus">Status</label>
+              <select id="bookingStatus" name="status" class="form-control">
+                <option value="upcoming" {% if booking.status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                <option value="active" {% if booking.status == 'active' %}selected{% endif %}>Active</option>
+                <option value="completed" {% if booking.status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="statusNotes">Notes</label>
+              <textarea id="statusNotes" name="notes" class="form-control" placeholder="Add notes about this status change..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-primary" onclick="submitStatusUpdate()">Update Status</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Extend Booking Modal -->
+  <div class="modal" id="extendModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Extend Booking</h3>
+          <button type="button" class="close-modal" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="extendForm" action="/admin/bookings/extend" method="POST">
+            <input type="hidden" name="booking_id" value="{{ booking._id }}">
+            
+            <div class="form-group">
+              <label for="currentEndDate">Current End Date</label>
+              <input type="text" id="currentEndDate" class="form-control" value="{{ booking.end_date }}" readonly>
+            </div>
+            
+            <div class="form-group">
+              <label for="newEndDate">New End Date</label>
+              <input type="date" id="newEndDate" name="new_end_date" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="additionalAmount">Additional Amount (₹)</label>
+              <input type="number" id="additionalAmount" name="additional_amount" class="form-control" required>
+              <small class="text-muted">Based on daily rate of ₹{{ booking.price_per_day }}</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="extensionReason">Reason for Extension</label>
+              <textarea id="extensionReason" name="reason" class="form-control" placeholder="Reason for extending the booking..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-primary" onclick="submitExtension()">Extend Booking</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Booking Confirmation Modal -->
+  <div class="modal" id="cancelModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Cancel Booking</h3>
+          <button type="button" class="close-modal" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to cancel this booking?</p>
+          <p class="text-danger">This action will mark the booking as cancelled and make the vehicle available for other bookings.</p>
+          
+          <form id="cancelForm" action="/admin/bookings/update-status" method="POST">
+            <input type="hidden" name="booking_id" value="{{ booking._id }}">
+            <input type="hidden" name="status" value="cancelled">
+            
+            <div class="form-group">
+              <label for="cancelNotes">Cancellation Reason</label>
+              <textarea id="cancelNotes" name="notes" class="form-control" placeholder="Reason for cancellation..." required></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-dismiss="modal">No, Keep It</button>
+          <button type="button" class="btn-danger" onclick="submitCancellation()">Yes, Cancel Booking</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize date pickers, etc.
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set minimum date for new end date input to be after current end date
+      const currentEndDate = new Date("{{ booking.end_date }}");
+      const nextDay = new Date(currentEndDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      
+      const minDateStr = nextDay.toISOString().split('T')[0];
+      document.getElementById('newEndDate').min = minDateStr;
+      document.getElementById('newEndDate').value = minDateStr;
+      
+      // Calculate additional amount when date changes
+      document.getElementById('newEndDate').addEventListener('change', function() {
+        const newEndDate = new Date(this.value);
+        const daysDiff = Math.floor((newEndDate - currentEndDate) / (1000 * 60 * 60 * 24));
+        const additionalAmount = daysDiff * {{ booking.price_per_day }};
+        document.getElementById('additionalAmount').value = additionalAmount;
+      });
+      
+      // Set initial value for additional amount
+      document.getElementById('additionalAmount').value = {{ booking.price_per_day }};
+    });
+    
+    // Show status update modal
+    function showStatusModal() {
+      document.getElementById('statusModal').style.display = 'block';
+    }
+    
+    // Show extend booking modal
+    function showExtendModal() {
+      document.getElementById('extendModal').style.display = 'block';
+    }
+    
+    // Submit status update form
+    function submitStatusUpdate() {
+      document.getElementById('updateStatusForm').submit();
+    }
+    
+    // Submit extension form
+    function submitExtension() {
+      document.getElementById('extendForm').submit();
+    }
+    
+    // Show cancel booking confirmation modal
+    function confirmCancelBooking() {
+      document.getElementById('cancelModal').style.display = 'block';
+    }
+    
+    // Submit cancellation form
+    function submitCancellation() {
+      document.getElementById('cancelForm').submit();
+    }
+    
+    // Generate invoice in new window
+    function generateInvoice(bookingId) {
+      window.open(`/admin/bookings/invoice/${bookingId}`, '_blank');
+    }
+    
+    // Save admin notes - implement this with AJAX
+    function saveAdminNotes() {
+      const notes = document.getElementById('adminNotes').value;
+      
+      fetch('/admin/bookings/save-notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          booking_id: '{{ booking._id }}',
+          notes: notes
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show save confirmation
+          alert('Notes saved successfully');
+        } else {
+          alert('Failed to save notes: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error saving notes:', error);
+        alert('An error occurred while saving notes');
+      });
+    }
+    
+    // Close modals
+    document.querySelectorAll('[data-dismiss="modal"]').forEach(element => {
+      element.addEventListener('click', function() {
+        document.querySelectorAll('.modal').forEach(modal => {
+          modal.style.display = 'none';
+        });
+      });
+    });
+    
+    // Close when clicking outside
+    window.addEventListener('click', function(event) {
+      document.querySelectorAll('.modal').forEach(modal => {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    });
+    
+    // Close alerts
+    document.querySelectorAll('.close-alert').forEach(button => {
+      button.addEventListener('click', function() {
+        this.parentElement.style.display = 'none';
+      });
+    });
+  </script>
+
+  <style>
+    /* Booking Details Page Styles */
+    .booking-details-container {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 -15px;
+    }
+    
+    .col-lg-8 {
+      width: 66.66%;
+      padding: 0 15px;
+      flex: 0 0 66.66%;
+    }
+    
+    .col-lg-4 {
+      width: 33.33%;
+      padding: 0 15px;
+      flex: 0 0 33.33%;
+    }
+    
+    @media (max-width: 992px) {
+      .col-lg-8, .col-lg-4 {
+        width: 100%;
+        flex: 0 0 100%;
+      }
+      
+      .col-lg-4 {
+        margin-top: 1.5rem;
+      }
+    }
+    
+    /* Status Banner */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1.5rem;
+      color: white;
+    }
+    
+    .status-banner.status-upcoming {
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    }
+    
+    .status-banner.status-active {
+      background: linear-gradient(135deg, #43aa8b, var(--success-color));
+    }
+    
+    .status-banner.status-completed {
+      background: linear-gradient(135deg, #2a9d8f, #43aa8b);
+    }
+    
+    .status-banner.status-cancelled {
+      background: linear-gradient(135deg, var(--danger-color), #f72585);
+    }
+    
+    .status-icon {
+      font-size: 2rem;
+      margin-right: 1.5rem;
+    }
+    
+    .status-info {
+      flex: 1;
+    }
+    
+    .status-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .status-description {
+      opacity: 0.9;
+    }
+    
+    .status-actions {
+      margin-left: 1.5rem;
+    }
+    
+    .status-actions .btn-primary {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    .status-actions .btn-primary:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Booking Information Sections */
+    .booking-section {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .booking-section:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 1.25rem;
+      position: relative;
+      padding-bottom: 0.5rem;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 2rem;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      border-radius: 2px;
+    }
+    
+    .detail-row {
+      display: flex;
+      margin-bottom: 0.75rem;
+      align-items: flex-start;
+    }
+    
+    .detail-label {
+      width: 150px;
+      min-width: 150px;
+      font-weight: 500;
+      color: var(--gray-600);
+    }
+    
+    .detail-value {
+      flex: 1;
+      color: var(--gray-800);
+      font-weight: 500;
+    }
+    
+    .price-highlight {
+      color: var(--primary-color);
+      font-size: 1.2rem;
+    }
+    
+    /* Admin Notes */
+    .notes-container {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .admin-notes-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 1rem;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--border-radius);
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: vertical;
+      margin-bottom: 1rem;
+    }
+    
+    .admin-notes-textarea:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+      outline: none;
+    }
+    
+    .save-notes-btn {
+      align-self: flex-end;
+    }
+    
+    /* Extension History */
+    .extension-history {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .extension-item {
+      background: var(--gray-100);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      border: 1px solid var(--gray-200);
+    }
+    
+    .extension-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .extension-date {
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+    
+    .extension-amount {
+      font-weight: 600;
+      color: #43aa8b;
+    }
+    
+    .extension-dates {
+      color: var(--gray-600);
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .extension-reason {
+      font-style: italic;
+      color: var(--gray-600);
+      font-size: 0.9rem;
+    }
+    
+    /* Status Timeline */
+    .status-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+    }
+    
+    .status-timeline::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 15px;
+      width: 2px;
+      background: var(--gray-200);
+    }
+    
+    .timeline-item {
+      display: flex;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .timeline-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-200);
+      color: var(--gray-700);
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    
+    .timeline-icon.status-upcoming {
+      background: rgba(67, 97, 238, 0.2);
+      color: var(--primary-color);
+    }
+    
+    .timeline-icon.status-active {
+      background: rgba(67, 170, 139, 0.2);
+      color: #43aa8b;
+    }
+    
+    .timeline-icon.status-completed {
+      background: rgba(42, 157, 143, 0.2);
+      color: #2a9d8f;
+    }
+    
+    .timeline-icon.status-cancelled {
+      background: rgba(230, 57, 70, 0.2);
+      color: var(--danger-color);
+    }
+    
+    .timeline-content {
+      flex: 1;
+      background: var(--gray-100);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      border: 1px solid var(--gray-200);
+    }
+    
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .timeline-title {
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+    
+    .timeline-date {
+      color: var(--gray-600);
+      font-size: 0.85rem;
+    }
+    
+    .timeline-notes {
+      color: var(--gray-600);
+      font-size: 0.95rem;
+    }
+    
+    .status-text {
+      font-weight: 600;
+    }
+    
+    .status-text.upcoming {
+      color: var(--primary-color);
+    }
+    
+    .status-text.active {
+      color: #43aa8b;
+    }
+    
+    .status-text.completed {
+      color: #2a9d8f;
+    }
+    
+    .status-text.cancelled {
+      color: var(--danger-color);
+    }
+    
+    /* Action Buttons Container */
+    .action-buttons-container {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius);
+      background: var(--gray-100);
+      color: var(--gray-700);
+      border: 1px solid var(--gray-300);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+      cursor: pointer;
+      font-weight: 500;
+      font-family: inherit;
+    }
+    
+    .action-btn:hover {
+      background: var(--gray-200);
+    }
+    
+    .action-btn-warning {
+      background: rgba(247, 37, 133, 0.1);
+      color: var(--warning-color);
+      border-color: rgba(247, 37, 133, 0.2);
+    }
+    
+    .action-btn-warning:hover {
+      background: rgba(247, 37, 133, 0.2);
+      color: var(--warning-color);
+    }
+    
+    .action-btn-danger {
+      background: rgba(230, 57, 70, 0.1);
+      color: var(--danger-color);
+      border-color: rgba(230, 57, 70, 0.2);
+    }
+    
+    .action-btn-danger:hover {
+      background: rgba(230, 57, 70, 0.2);
+      color: var(--danger-color);
+    }
+    
+    /* Customer Information */
+    .customer-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .customer-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    
+    .customer-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      text-align: center;
+    }
+    
+    .customer-info {
+      margin-bottom: 1.5rem;
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      color: var(--gray-700);
+    }
+    
+    .info-text {
+      flex: 1;
+      color: var(--gray-700);
+      word-break: break-word;
+    }
+    
+    .no-customer-info, .no-vehicle-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      color: var(--gray-500);
+      text-align: center;
+    }
+    
+    .no-customer-info i, .no-vehicle-info i {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    .customer-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .full-width {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    
+    /* Vehicle Information */
+    .vehicle-image {
+      width: 100%;
+      height: 160px;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    
+    .vehicle-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .vehicle-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    .vehicle-meta {
+      margin-bottom: 1.5rem;
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    
+    .meta-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.75rem;
+      color: var(--primary-color);
+      font-size: 0.8rem;
+    }
+    
+    /* Booking Meta Information */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    .meta-item {
+      background: var(--gray-100);
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+    }
+    
+    .meta-label {
+      font-size: 0.8rem;
+      color: var(--gray-600);
+      margin-bottom: 0.25rem;
+    }
+    
+    .meta-value {
+      font-weight: 500;
+      color: var(--gray-800);
+    }
+    
+    .id-value {
+      font-family: monospace;
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+    
+    .mt-4 {
+      margin-top: 1.5rem;
+    }
+    
+    /* Badge */
+    .badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .badge-info {
+      background: rgba(13, 202, 240, 0.1);
+      color: #0dcaf0;
+    }
+    
+    /* Button Variants */
+    .btn-danger {
+      background: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .btn-danger:hover {
+      background: #d32f2f;
+      box-shadow: 0 4px 8px rgba(230, 57, 70, 0.2);
+    }
+    
+    .text-danger {
+      color: var(--danger-color);
+    }
+    
+    .text-muted {
+      color: var(--gray-600);
+      font-size: 0.85rem;
+    }
+  </style>
+</body>
+</html>
