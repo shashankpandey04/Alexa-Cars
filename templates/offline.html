@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlexaCars - Offline</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --danger-color: #e63946;
+            --dark-color: #0f1631;
+            --light-color: #f8f9fa;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --transition-speed: 0.3s;
+            --border-radius: 16px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+            color: var(--gray-800);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            max-width: 600px;
+            width: 100%;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .offline-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 40px 20px;
+            position: relative;
+        }
+        
+        .offline-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        .offline-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .offline-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .offline-body {
+            padding: 40px 30px;
+        }
+        
+        .offline-message {
+            margin-bottom: 30px;
+            color: var(--gray-700);
+            line-height: 1.6;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        .offline-footer {
+            background-color: var(--gray-100);
+            padding: 20px;
+            color: var(--gray-600);
+            font-size: 14px;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .contact-info {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .contact-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .offline-container {
+                border-radius: 12px;
+            }
+            
+            .offline-header {
+                padding: 30px 15px;
+            }
+            
+            .offline-icon {
+                font-size: 60px;
+            }
+            
+            .offline-title {
+                font-size: 24px;
+            }
+            
+            .offline-body {
+                padding: 30px 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .contact-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-header">
+            <div class="offline-icon">
+                <i class="fas fa-wifi-slash"></i>
+            </div>
+            <h1 class="offline-title">We're Currently Offline</h1>
+            <p class="offline-subtitle">Our website is temporarily unavailable</p>
+        </div>
+        
+        <div class="offline-body">
+            <div class="offline-message">
+                <p>Thank you for visiting AlexaCars. We're currently experiencing technical difficulties and our site is temporarily offline. Our team is working to resolve the issue as quickly as possible.</p>
+                <p>We apologize for any inconvenience this may cause.</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="window.location.reload()">
+                    <i class="fas fa-sync"></i> Refresh Page
+                </button>
+                <a href="tel:9660597171" class="btn btn-outline">
+                    <i class="fas fa-phone"></i> Contact Us
+                </a>
+            </div>
+        </div>
+        
+        <div class="offline-footer">
+            <p>AlexaCars - Premium Car Rental Service</p>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <a href="tel:9660597171">+91 9660597171</a>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <a href="mailto:contact@alexacars.com">contact@alexacars.com</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

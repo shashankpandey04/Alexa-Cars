@@ -11,16 +11,14 @@ from bson import ObjectId
 from werkzeug.utils import secure_filename
 import time
 import threading
+import requests
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Initialize Flask app
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-# Initialize MongoDB client
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client['alexcars']
 users_collection = db['users']
@@ -29,14 +27,12 @@ inquiries_collection = db['inquiries']
 revenue_collection = db['revenue']
 bookings_collection = db['bookings']
 
-# Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
 
-# User class for Flask-Login
 class User(UserMixin):
     def __init__(self, user_id, first_name, email, admin):
         self.id = user_id
@@ -46,6 +42,16 @@ class User(UserMixin):
 
     def get_id(self):
         return self.id
+    
+WEBSITE_STATUS = "ONLINE"
+DEPLOYMENT_LINK = os.getenv('DEPLOYMENT_LINK', 'NONE')
+
+@app.before_request
+def check_website_status():
+    if WEBSITE_STATUS == "OFFLINE":
+        return render_template('offline.html'), 503
+    elif WEBSITE_STATUS == "MAINTENANCE":
+        return render_template('maintenance.html'), 503
     
 @login_manager.user_loader
 def load_user(user_id):
@@ -1454,15 +1460,49 @@ def background_task():
         # Sleep for 12 hours
         time.sleep(43200)
 
-def deploy():
-    # Start the background task in a separate thread
-    bg_thread = threading.Thread(target=background_task)
-    bg_thread.daemon = True  # Allow the thread to exit when the main program exits
-    bg_thread.start()
+@app.route('/api/v1/manage/site', methods=['POST'])
+def manage_site():
+    """
+    Endpoint to manage the site status.
+    It will change the WEBSITE_STATUS global variable to the value provided in the request.
+    """
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data or 'auth_key' not in data or 'status' not in data:
+            return jsonify({"error": "Invalid request"}), 400
+        auth_key = data['auth_key']
+        AUTH_KEY = os.getenv('AUTH_KEY', "FounDevStudiio@AlexaCars")
+        if auth_key != AUTH_KEY:
+            return jsonify({"error": "Unauthorized"}), 401
+        
+        status = data['status']
+        if status not in ['ONLINE', 'OFFLINE', 'MAINTENANCE']:
+            return jsonify({"error": "Invalid status value"}), 400
+        
+        if status == "MAINTENANCE":
+            global DEPLOYMENT_LINK
+            if DEPLOYMENT_LINK:
+                try:
+                    response = requests.get(DEPLOYMENT_LINK)
+                    if response.status_code == 200:
+                        return jsonify({"message": "Website has been deployed successfully"}), 200
+                    else:
+                        return jsonify({"error": "Deployment link is not reachable"}), 500
+                except requests.RequestException as e:
+                    return jsonify({"error": f"Error reaching deployment link: {str(e)}"}), 500
+
+        global WEBSITE_STATUS
+        WEBSITE_STATUS = status
+        return jsonify({"message": f"Website status updated to {status}"}), 200
     
-    # Run the Flask app
+    return jsonify({"error": "Method not allowed"}), 405
+
+def deploy():
+    bg_thread = threading.Thread(target=background_task)
+    bg_thread.daemon = True
+    bg_thread.start()
+
     app.run(debug=True, host='0.0.0.0', port=80)
-    # Note: thread.join() is never reached because app.run() blocks
 
 if __name__ == "__main__":
     deploy()
