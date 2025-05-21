@@ -48,6 +48,7 @@ DEPLOYMENT_LINK = os.getenv('DEPLOYMENT_LINK', 'NONE')
 
 @app.before_request
 def check_website_status():
+    return render_template('no_payment.html'), 503
     if WEBSITE_STATUS == "OFFLINE":
         return render_template('offline.html'), 503
     elif WEBSITE_STATUS == "MAINTENANCE":
