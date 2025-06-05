@@ -1,0 +1,6 @@
+Flask
+Flask-Login
+pymongo
+python-dotenv
+pytz
+requests
